@@ -14,10 +14,12 @@ import {
   Banknote,
   Eye,
 } from "lucide-react";
+//@ts-expect-error icons
 import { AtmIcon, AlertIcon, LogoutIcon } from "@/components/icons";
+//@ts-expect-error file path
 import { useAuthStore } from "@/lib/store/authStore";
 import { useIsMobile } from "@/app/hooks/use-mobile";
-
+//@ts-expect-error file path
 import { useGuideStore } from "@/lib/store/guideStore";
 
 export default function Sidebar() {

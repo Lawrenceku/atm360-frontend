@@ -7,7 +7,7 @@ export function CustomToaster() {
       position="bottom-right"
       richColors
       toastOptions={{
-        className: "rounded-lg shadow-md border font-medium text-sm",
+        className: "rounded-lg shadow-md border font-medium text-base",
 
         classNames: {
           success:
