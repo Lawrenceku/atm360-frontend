@@ -12,7 +12,7 @@ import ActivityChart from "@/components/ops/ActivityChart";
 import TopicList from "@/components/ops/TopicList";
 //@ts-expect-error file-path-module
 import Leaderboard from "@/components/ops/Leaderboard";
-import { AtmNetworkUptime } from "@/components/ops/AtmNetworkUptime";
+import { AtmNetworkUptime } from "@/components/ops/kpis/AtmNetworkUptime";
 import { MeanTimeToRepair } from "@/components/ops/MeanTimeToRepair";
 import { AtmDowntimeByRegion } from "@/components/ops/AtmDowntimeByRegion";
 import { IncidentBreakdown } from "@/components/ops/IncidentBreakdown";
