@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import mockAtms from "../mockAtms";
 import { atmApi } from "../api/endpoints";
-import isATMArray from "../utils/isAtmArray";
+import isATMArray from "../utils/isAlertArray";
 
 export type AtmStore = {
   atms: ATM[];
