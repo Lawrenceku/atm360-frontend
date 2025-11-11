@@ -1,7 +1,6 @@
 "use client";
 
 import Sidebar from "@/components/ops/Sidebar";
-//@ts-expect-error file-path-module
 import { TopNav } from "@/components/ops/TopNav";
 //@ts-expect-error file-path-module
 import Filters from "@/components/ops/Filters";
@@ -13,18 +12,19 @@ import TopicList from "@/components/ops/TopicList";
 //@ts-expect-error file-path-module
 import Leaderboard from "@/components/ops/Leaderboard";
 import { AtmNetworkUptime } from "@/components/ops/kpis/AtmNetworkUptime";
-import { MeanTimeToRepair } from "@/components/ops/MeanTimeToRepair";
-import { AtmDowntimeByRegion } from "@/components/ops/AtmDowntimeByRegion";
-import { IncidentBreakdown } from "@/components/ops/IncidentBreakdown";
-import { FraudDetectionRate } from "@/components/ops/FraudDetectionRate";
-import { CashAvailability } from "@/components/ops/CashAvailability";
-import { EngineerUtilization } from "@/components/ops/EngineerUtilization";
-import { CashReplenishmentTime } from "@/components/ops/CashReplenishmentTime";
-import { TopAtmsByVolume } from "@/components/ops/TopAtmsByVolume";
-import { RecurringFaults } from "@/components/ops/RecurringFaults";
-import { SLACompliance } from "@/components/ops/SLACompliance";
-import { RegionalPerformance } from "@/components/ops/RegionalPerformance";
-import { TotalCostOfOperations } from "@/components/ops/TotalCostOfOperations";
+
+import { MeanTimeToRepair } from "@/components/ops/kpis/MeanTimeToRepair";
+import { AtmDowntimeByRegion } from "@/components/ops/kpis/AtmDowntimeByRegion";
+import { IncidentBreakdown } from "@/components/ops/kpis/IncidentBreakdown";
+import { FraudDetectionRate } from "@/components/ops/kpis/FraudDetectionRate";
+import { CashAvailability } from "@/components/ops/kpis/CashAvailability";
+import { EngineerUtilization } from "@/components/ops/kpis/EngineerUtilization";
+import { CashReplenishmentTime } from "@/components/ops/kpis/CashReplenishmentTime";
+import { TopAtmsByVolume } from "@/components/ops/kpis/TopAtmsByVolume";
+import { RecurringFaults } from "@/components/ops/kpis/RecurringFaults";
+import { SLACompliance } from "@/components/ops/kpis/SLACompliance";
+import { RegionalPerformance } from "@/components/ops/kpis/RegionalPerformance";
+import { TotalCostOfOperations } from "@/components/ops/kpis/TotalCostOfOperations";
 import { useAtmStore, selectAtms } from "@/lib/store/atmStore";
 import { useTicketStore, selectTickets } from "@/lib/store/ticketStore";
 import { useAlertStore, selectAlerts } from "@/lib/store/alertStore";
