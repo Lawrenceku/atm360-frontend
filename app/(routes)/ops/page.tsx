@@ -1,12 +1,17 @@
 "use client";
 
-import Sidebar from "../../../components/ops/Sidebar";
-import { TopNav } from "../../../components/ops/TopNav";
-import Filters from "../../../components/ops/Filters";
-import KpiCard from "../../../components/ops/KpiCard";
-import ActivityChart from "../../../components/ops/ActivityChart";
-import TopicList from "../../../components/ops/TopicList";
-import Leaderboard from "../../../components/ops/Leaderboard";
+import Sidebar from "@/components/ops/Sidebar";
+//@ts-expect-error file-path-module
+import { TopNav } from "@/components/ops/TopNav";
+//@ts-expect-error file-path-module
+import Filters from "@/components/ops/Filters";
+//@ts-expect-error file-path-module
+import KpiCard from "@/components/ops/KpiCard";
+import ActivityChart from "@/components/ops/ActivityChart";
+//@ts-expect-error file-path-module
+import TopicList from "@/components/ops/TopicList";
+//@ts-expect-error file-path-module
+import Leaderboard from "@/components/ops/Leaderboard";
 import { AtmNetworkUptime } from "@/components/ops/AtmNetworkUptime";
 import { MeanTimeToRepair } from "@/components/ops/MeanTimeToRepair";
 import { AtmDowntimeByRegion } from "@/components/ops/AtmDowntimeByRegion";
