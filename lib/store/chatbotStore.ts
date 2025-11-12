@@ -23,7 +23,8 @@ export const useChatbotStore = create<ZeniState>((set, get) => ({
   clearChat: () => set({ messages: [] }),
 
   sendMessage: async (input: string) => {
-    const router = useRouter();
+    // const router = useRouter();
+    const router = {};
     const transparency = useTransparencyStore.getState();
     const id = nanoid();
     const userMessage: ZeniMessage = {

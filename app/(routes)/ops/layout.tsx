@@ -3,6 +3,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Sidebar from "@/components/ops/Sidebar";
 import { TopNav } from "@/components/ops/TopNav";
 import { GuideTour } from "@/components/guide/GuideTour";
+import ZeniPanel from "@/components/chatbot/zeniPanel";
 
 export default function OpsLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function OpsLayout({ children }: { children: React.ReactNode }) {
 
           <GuideTour />
           <div className="flex-1 p-4">{children}</div>
+          {/* <ZeniPanel /> */}
         </div>
       </div>
     </ProtectedRoute>
