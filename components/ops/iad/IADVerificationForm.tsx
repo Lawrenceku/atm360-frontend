@@ -13,7 +13,7 @@ import {
   Link2,
   FileSearch,
 } from "lucide-react";
-import { verifyIAD } from "@/lib/api/IiadApi";
+import { verifyIAD } from "@/lib/api/iadApi";
 import { useIADStore, type IADDetails } from "@/lib/store/IADStore";
 import { useTransparencyStore } from "@/lib/store/transparencyStore";
 
