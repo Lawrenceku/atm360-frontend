@@ -194,11 +194,9 @@ export default function ActivityPage() {
       {/* AI Alert Banner */}
 
       {/* Tabs */}
-      <Card>
-        <CardContent className="flex items-center gap-2 w-full rounded-lg py-4 animate-pulse bg-zenith-accent-200/50 border-zenith-accent-300 text-zenith-accent-800 ">
-          <Info size={20} />
-          AI Monitoring is active...
-        </CardContent>
+      <Card className="flex items-center gap-2 w-full rounded-lg py-4 animate-pulse bg-zenith-accent-200/50 border-zenith-accent-300 text-zenith-accent-800 !flex-row">
+        <Info size={20} />
+        AI Monitoring is active...
       </Card>
       {/* Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -239,22 +237,17 @@ export default function ActivityPage() {
       </div>
 
       {/* AI Alert Banner */}
-      <Card className="border-orange-200 bg-orange-50">
-        <CardContent className="flex items-center gap-2 w-full rounded-lg py-4">
-          {/* <p className="text-sm text-orange-700">
-                AI is analyzing patterns. 3 active alerts require attention.
-              </p> */}
-          <AlertTriangle className="w-5 h-5 text-orange-600" />
-          <span className="text-sm text-orange-700">
-            Zeni is analyzing patterns. 3 active alerts require attention.
-          </span>
-          <a
-            href="/alerts"
-            className="flex items-center gap-1 bg-orange-700/80 p-2 rounded-lg text-orange-100 ml-auto hover:bg-orange-700 transition"
-          >
-            View <ArrowUpRight size={20} />
-          </a>
-        </CardContent>
+      <Card className="border-orange-200 bg-orange-50 flex !flex-row items-center gap-2 w-full rounded-lg py-1 px-3">
+        <AlertTriangle className="w-5 h-5 text-orange-600" />
+        <span className="text-sm text-orange-700 flex-1">
+          Zeni is analyzing patterns. 3 active alerts require attention.
+        </span>
+        <a
+          href="/alerts"
+          className="flex items-center gap-1 bg-orange-700/80 p-2 rounded-lg text-orange-100 ml-auto hover:bg-orange-700 transition px-4 py-2"
+        >
+          View <ArrowUpRight size={20} />
+        </a>
       </Card>
 
       {/* Tabs */}
