@@ -92,7 +92,7 @@ export default function TaskSummaryCard({ ticket, atm }: TaskSummaryCardProps) {
 
   return (
     <motion.div
-      className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 w-full max-w-md mx-auto"
+      className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 w-full max-w-md mx-auto h-fit"
       variants={cardVariants}
       initial="hidden"
       animate="visible"

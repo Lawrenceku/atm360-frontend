@@ -78,7 +78,7 @@ export function AlertList() {
   }
 
   return (
-    <div className="relative h-full overflow-y-auto bg-[var(--color-zenith-neutral-50)] border border-[var(--color-zenith-neutral-200)] rounded-xl shadow-sm flex flex-col">
+    <div className="relative h-screen overflow-y-auto bg-[var(--color-zenith-neutral-50)] border border-[var(--color-zenith-neutral-200)] rounded-xl shadow-sm flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-10 p-4 bg-[var(--color-zenith-neutral-100)] border-b border-[var(--color-zenith-neutral-200)] flex items-center justify-between">
         <h3 className="text-lg font-semibold text-[var(--color-zenith-neutral-900)] flex items-center gap-2">

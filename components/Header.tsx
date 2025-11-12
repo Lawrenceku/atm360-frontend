@@ -26,7 +26,7 @@ export default function Header({
           <h1 className="text-xl font-bold">{title}</h1>
           {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
         </div>
-        <div className="text-sm text-slate-400">
+        <div className="text-sm text-slate-400 flex items-center gap-1">
           ATM360 •{" "}
           <img src="/images/zeni.png" className="w-6 h-6 animate-spin" />
         </div>

@@ -38,6 +38,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
   const { user } = useAuthStore();
   const ticket = useTicketStore(selectTicketById(ticketId));
   const atmSelector = ticket?.atmId ? selectAtmById(ticket.atmId) : () => null;
+  // @ts-expect-error ignore
   const atm = useAtmStore(atmSelector);
   const { addLog } = useTransparencyStore();
 
@@ -373,64 +374,67 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
     <div className="min-h-screen bg-gray-50">
       <Header title={`Task #${ticket.id}`} subtitle="Engineer Workflow" />
       <MultiStepProgress steps={steps} activeStep={activeStep} />
-      <main className="max-w-3xl mx-auto p-4 space-y-5">
-        <AnimatePresence mode="wait">
-          {!arrived && (
-            <motion.div
-              key="map"
-              initial={{ opacity: 0, y: 80, animationDuration: 0.6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -80, animationDuration: 0.8 }}
-            >
-              <ArrivalBanner arrived={arrived} distance={distance} />
-              {/* <TaskMapCard atm={atm} userLocation={userLocation} /> */}
-            </motion.div>
-          )}
-
-          {arrived && !verified && (
-            <motion.div
-              key="verify"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <VerificationPanel />
-            </motion.div>
-          )}
-
-          {verified && (
-            <motion.div
-              key="details"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Checklist checklist={checklist} setChecklist={setChecklist} />
-              <UploadProof onSuccess={handleProofUpload} />
-              {ticket.resolution?.proofPhotoUrl && (
-                <section className="mx-auto flex flex-col items-center">
-                  <h3 className="text-lg font-semibold">Uploaded Proof</h3>
-                  <div className="mt-2 mx-auto">
-                    <Image
-                      src={ticket.resolution.proofPhotoUrl}
-                      alt="Proof Photo"
-                      width={400}
-                      height={300}
-                      className="rounded border"
-                    />
-                  </div>
-                </section>
-              )}
-
-              <button
-                onClick={handleMarkComplete}
-                className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+      <main className="flex flex-col md:flex-row gap-6 items-center md:items-start max-w-6xl mx-auto px-4 py-6">
+        <div className="flex-1">
+          <AnimatePresence mode="wait">
+            {!arrived && (
+              <motion.div
+                key="map"
+                initial={{ opacity: 0, y: 80, animationDuration: 0.6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -80, animationDuration: 0.8 }}
               >
-                Mark Task Complete
-              </button>
-              <SupportPanel />
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <ArrivalBanner arrived={arrived} distance={distance} />
+                {/* <TaskMapCard atm={atm} userLocation={userLocation} /> */}
+              </motion.div>
+            )}
+
+            {arrived && !verified && (
+              <motion.div
+                key="verify"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+              >
+                <VerificationPanel />
+              </motion.div>
+            )}
+
+            {verified && (
+              <motion.div
+                key="details"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Checklist checklist={checklist} setChecklist={setChecklist} />
+                <UploadProof onSuccess={handleProofUpload} />
+                {ticket.resolution?.proofPhotoUrl && (
+                  <section className="mx-auto flex flex-col items-center">
+                    <h3 className="text-lg font-semibold">Uploaded Proof</h3>
+                    <div className="mt-2 mx-auto">
+                      <Image
+                        src={ticket.resolution.proofPhotoUrl}
+                        alt="Proof Photo"
+                        width={400}
+                        height={300}
+                        className="rounded border"
+                      />
+                    </div>
+                  </section>
+                )}
+
+                <button
+                  onClick={handleMarkComplete}
+                  disabled={actionLoading}
+                  className="bg-zenith-accent-600 hover:bg-zenith-accent-500 disabled:opacity-60 mt-4 w-full text-white py-2 rounded transition"
+                >
+                  Mark Task Complete
+                </button>
+                <SupportPanel />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         <TaskSummaryCard ticket={ticket} atm={atm} />
       </main>
     </div>

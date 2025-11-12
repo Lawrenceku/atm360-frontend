@@ -2,7 +2,7 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Sidebar from "@/components/ops/Sidebar";
 import { TopNav } from "@/components/ops/TopNav";
-// import { GuideTour } from "@/components/ops/GuideTour";
+import { GuideTour } from "@/components/ops/GuideTour";
 
 export default function OpsLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,7 +12,7 @@ export default function OpsLayout({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col space-y-6 h-screen overflow-y-auto scrollbar">
           <TopNav />
 
-          {/* <GuideTour /> */}
+          <GuideTour />
           <div className="flex-1 p-4">{children}</div>
         </div>
       </div>
