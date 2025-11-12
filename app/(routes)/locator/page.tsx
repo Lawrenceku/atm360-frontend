@@ -57,7 +57,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
-
+import formatText from "@/lib/utils/formatText";
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -482,9 +482,17 @@ export default function App() {
                     <p className="text-sm text-gray-600 mb-2">
                       {atm.location.address}
                     </p>
-                    <Badge className={statusColors[atm.status].badge}>
-                      {atm.status.replace(/_/g, " ")}
-                    </Badge>
+                    <div className="flex justify-between items-center">
+                      <Badge className={statusColors[atm.status].badge}>
+                        {formatText(atm.status)}
+                      </Badge>
+                      <div className="flex items-center">
+                        <span className="text-xs">Estimated Wait Time:</span>
+                        <Badge className="bg-gray-50 text-zenith-accent-800 border border-zenith-accent-600">
+                          {Math.max(8, Math.floor(Math.random() * 10))}min
+                        </Badge>
+                      </div>
+                    </div>
                     <div className="mt-3">
                       <Link
                         href={`/locator/${atm.id}`}
