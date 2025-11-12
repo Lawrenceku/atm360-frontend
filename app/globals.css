@@ -3,6 +3,54 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@layer base {
+  :root {
+    --font-sans: var(--font-mona-sans);
+  }
+}
+html,
+body {
+  font-family: var(--font-mona-sans);
+  scroll-behavior: smooth;
+}
+@theme {
+  --color-zenith-red-50: #fff5f5;
+  --color-zenith-red-100: #ffe0df;
+  --color-zenith-red-200: #ffb8b5;
+  --color-zenith-red-300: #ff8a85;
+  --color-zenith-red-400: #f24c43;
+  --color-zenith-red-500: #e1251b;
+  --color-zenith-red-600: #c81e15;
+  --color-zenith-red-700: #a51710;
+  --color-zenith-red-800: #81110b;
+  --color-zenith-red-900: #5b0a07;
+
+  --color-zenith-neutral-50: #f9fafb;
+  --color-zenith-neutral-100: #f3f4f6;
+  --color-zenith-neutral-200: #e5e7eb;
+  --color-zenith-neutral-300: #d1d5db;
+  --color-zenith-neutral-400: #9ca3af;
+  --color-zenith-neutral-500: #6b7280;
+  --color-zenith-neutral-600: #4b5563;
+  --color-zenith-neutral-700: #374151;
+  --color-zenith-neutral-800: #1f2937;
+  --color-zenith-neutral-900: #111827;
+
+  --color-zenith-accent-50: #f0f9ff;
+  --color-zenith-accent-100: #e0f2fe;
+  --color-zenith-accent-200: #bae6fd;
+  --color-zenith-accent-300: #7dd3fc;
+  --color-zenith-accent-400: #38bdf8;
+  --color-zenith-accent-500: #0ea5e9;
+  --color-zenith-accent-600: #0284c7;
+  --color-zenith-accent-700: #0369a1;
+  --color-zenith-accent-800: #075985;
+  --color-zenith-accent-900: #0c4a6e;
+  --color-zenith-success: #16a34a;
+  --color-zenith-warning: #f59e0b;
+  --color-zenith-error: #dc2626;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,8 +93,6 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -76,6 +122,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
 }
 
 .dark {
@@ -119,4 +167,28 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@utility scrollbar {
+  scrollbar-width: none;
+  /* &::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  &::-webkit-scrollbar-track {
+    @apply bg-zenith-neutral-100;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-zenith-accent-700 rounded;
+  } */
+}
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
 }
