@@ -135,7 +135,6 @@ export default function ReportsPage() {
 
     return months.map((month, i) => ({
       month,
-      //@ts-ignore
       value: Math.floor(baseTransactions * (0.7 + Math.random() * 0.6)),
       uptime: Math.floor(85 + Math.random() * 12),
     }));
