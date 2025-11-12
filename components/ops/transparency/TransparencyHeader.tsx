@@ -10,7 +10,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Filters } from "@/app/ops/transparency/page";
+import { Filters } from "@/app/(routes)/ops/transparency/page";
 
 export function TransparencyHeader({
   onFilterChange,

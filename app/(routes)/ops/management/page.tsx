@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import Papa from "papaparse";
@@ -93,6 +92,7 @@ export default function AdminManagementPage() {
   const [uploadType, setUploadType] = useState<
     "atms" | "branches" | "cashlogs"
   >("atms");
+
   const [parseResult, setParseResult] = useState<any[]>([]);
   const [parseErrors, setParseErrors] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -266,486 +266,472 @@ export default function AdminManagementPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopNav />
-
-        {/* API Key Bar */}
-        <div
-          data-guide="api-key"
-          className="bg-white border-b px-6 py-3 flex justify-between items-center"
-        >
-          <div className="flex items-center gap-3">
-            <Key className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-700">API Key:</span>
-            <code className="text-xs bg-gray-100 px-3 py-1 rounded font-mono text-gray-800">
-              *************************************
-            </code>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-xs"
-              onClick={() => {
-                navigator.clipboard.writeText(
-                  "sk_live_atm_lagos_9f8e3k2m1n4b7x6c5v8z"
-                );
-                // alert('API Key copied to clipboard!');
-                toast.success("API Key copied to clipboard!");
-              }}
-            >
-              Copy
-            </Button>
-          </div>
-          <div className="text-sm text-gray-500">
-            Lagos Operations • {format(new Date(), "PPP p")}
-          </div>
+    <>
+      <div
+        data-guide="api-key"
+        className="bg-white border-b px-6 py-3 flex justify-between items-center"
+      >
+        <div className="flex items-center gap-3">
+          <Key className="w-5 h-5 text-gray-600" />
+          <span className="text-sm font-medium text-gray-700">API Key:</span>
+          <code className="text-xs bg-gray-100 px-3 py-1 rounded font-mono text-gray-800">
+            *************************************
+          </code>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-xs"
+            onClick={() => {
+              navigator.clipboard.writeText(
+                "sk_live_atm_lagos_9f8e3k2m1n4b7x6c5v8z"
+              );
+              // alert('API Key copied to clipboard!');
+              toast.success("API Key copied to clipboard!");
+            }}
+          >
+            Copy
+          </Button>
         </div>
+        <div className="text-sm text-gray-500">
+          Lagos Operations • {format(new Date(), "PPP p")}
+        </div>
+      </div>
 
-        <div className="flex-1 overflow-auto">
-          <div className="p-6 space-y-6 max-w-7xl mx-auto">
-            {/* Header */}
-            <div
-              data-guide="management-header"
-              className="flex justify-between items-start"
-            >
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Management Console
-                </h1>
-                <p className="text-gray-600 mt-1">
-                  Zenith Admin Portal • Operations & Configuration
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" size="sm" onClick={refresh}>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
-                </Button>
-                <Button
-                  data-guide="bulk-import"
-                  onClick={triggerFileUpload}
-                  className="bg-zenith-neutral-900 hover:bg-zenith-neutral-800"
-                  size="sm"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Bulk Import
-                </Button>
-              </div>
+      <div className="flex-1 overflow-auto">
+        <div className="p-6 space-y-6 max-w-7xl mx-auto">
+          {/* Header */}
+          <div
+            data-guide="management-header"
+            className="flex justify-between items-start"
+          >
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Management Console
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Zenith Admin Portal • Operations & Configuration
+              </p>
             </div>
+            <div className="flex gap-3">
+              <Button variant="outline" size="sm" onClick={refresh}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+              <Button
+                data-guide="bulk-import"
+                onClick={triggerFileUpload}
+                className="bg-zenith-neutral-900 hover:bg-zenith-neutral-800"
+                size="sm"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Bulk Import
+              </Button>
+            </div>
+          </div>
 
-            {/* Hidden file input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.txt,.xlsx,.xls"
-              onChange={handleFileChange}
-              className="hidden"
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.txt,.xlsx,.xls"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <Input
+              placeholder="Search ATMs, branches, issues..."
+              className="pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
+          </div>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-              <Input
-                placeholder="Search ATMs, branches, issues..."
-                className="pl-10"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+          {/* Upload Progress */}
+          {uploading && uploadProgress < 100 && (
+            <Card className="border-green-200 bg-green-50">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-4">
+                  <Progress value={uploadProgress} className="flex-1" />
+                  <span className="text-sm text-gray-600 font-medium">
+                    Processing file... {uploadProgress}%
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-            {/* Upload Progress */}
-            {uploading && uploadProgress < 100 && (
-              <Card className="border-green-200 bg-green-50">
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-4">
-                    <Progress value={uploadProgress} className="flex-1" />
-                    <span className="text-sm text-gray-600 font-medium">
-                      Processing file... {uploadProgress}%
-                    </span>
+          {/* Tabs */}
+          <Tabs value={tab} onValueChange={setTab} className="space-y-6">
+            <TabsList
+              data-guide="management-tabs"
+              className="grid w-full grid-cols-4"
+            >
+              <TabsTrigger value="atms">ATMs ({atms.length})</TabsTrigger>
+              <TabsTrigger value="branches">
+                Branches ({branches.length})
+              </TabsTrigger>
+              <TabsTrigger value="issues">
+                Log Issues
+                {unresolvedIssues > 0 && (
+                  <Badge className="ml-2 bg-red-600 text-white">
+                    {unresolvedIssues}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="settings">Configuration</TabsTrigger>
+            </TabsList>
+
+            {/* ATMs Tab */}
+            <TabsContent value="atms" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">ATM Fleet Management</h2>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setUploadType("atms");
+                    downloadTemplate();
+                  }}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Template
+                </Button>
+              </div>
+
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ATM ID</TableHead>
+                        <TableHead>Branch</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Cash Level</TableHead>
+                        <TableHead>Uptime (7d)</TableHead>
+                        <TableHead>Failure Risk</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAtms.slice(0, 15).map((atm) => (
+                        <TableRow key={atm.id}>
+                          <TableCell className="font-medium">
+                            {atm.id}
+                          </TableCell>
+                          <TableCell>
+                            {atm.location.branchName || "—"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                atm.status === "ONLINE"
+                                  ? "default"
+                                  : "destructive"
+                              }
+                            >
+                              {atm.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            ₦
+                            {(atm.cashLevel.currentAmount / 1_000_000).toFixed(
+                              1
+                            )}
+                            M
+                          </TableCell>
+                          <TableCell>
+                            {atm.uptimeMetrics?.uptimePercentageLast7Days || 0}%
+                          </TableCell>
+                          <TableCell>
+                            <span
+                              className={
+                                (atm.predictiveScore?.failureRisk ?? 0) > 0.7
+                                  ? "text-red-600 font-bold"
+                                  : ""
+                              }
+                            >
+                              {Math.round(
+                                (atm.predictiveScore?.failureRisk || 0) * 100
+                              )}
+                              %
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Button size="sm" variant="ghost">
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Branches Tab */}
+            <TabsContent value="branches" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Branch Directory</h2>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setUploadType("branches");
+                    downloadTemplate();
+                  }}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Template
+                </Button>
+              </div>
+
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Branch Name</TableHead>
+                        <TableHead>LGA</TableHead>
+                        <TableHead>State</TableHead>
+                        <TableHead>Address</TableHead>
+                        <TableHead>ATM Count</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {branches.map((branch) => (
+                        <TableRow key={branch.name}>
+                          <TableCell className="font-medium">
+                            {branch.name}
+                          </TableCell>
+                          <TableCell>{branch.lga}</TableCell>
+                          <TableCell>{branch.state}</TableCell>
+                          <TableCell className="text-sm text-gray-600">
+                            {branch.address}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{branch.atmCount}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Log Issues Tab */}
+            <TabsContent value="issues" className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">
+                  Client-Reported Issues
+                </h2>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="bg-red-600 hover:bg-red-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      File New Issue
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>File Issue to Vendor</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div>
+                        <Label>ATM ID</Label>
+                        <Input placeholder="ATM-LAG-XXXX" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label>Issue Title</Label>
+                        <Input
+                          placeholder="e.g., Card reader not working"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Priority</Label>
+                        <Select defaultValue="MEDIUM">
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="LOW">Low</SelectItem>
+                            <SelectItem value="MEDIUM">Medium</SelectItem>
+                            <SelectItem value="HIGH">High</SelectItem>
+                            <SelectItem value="CRITICAL">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Description</Label>
+                        <Textarea
+                          rows={5}
+                          placeholder="Provide detailed description of the issue..."
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline">Cancel</Button>
+                      <Button className="bg-red-600 hover:bg-red-700">
+                        Submit Issue
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Issue ID</TableHead>
+                        <TableHead>ATM ID</TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Date Filed</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {issues.map((issue) => (
+                        <TableRow key={issue.id}>
+                          <TableCell className="font-medium">
+                            {issue.id}
+                          </TableCell>
+                          <TableCell>{issue.atmId}</TableCell>
+                          <TableCell>{issue.title}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                issue.priority === "CRITICAL"
+                                  ? "destructive"
+                                  : issue.priority === "HIGH"
+                                  ? "destructive"
+                                  : "secondary"
+                              }
+                            >
+                              {issue.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{issue.date}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                issue.status === "OPEN"
+                                  ? "bg-orange-500"
+                                  : issue.status === "IN_PROGRESS"
+                                  ? "bg-blue-500"
+                                  : "bg-green-500"
+                              }
+                            >
+                              {issue.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Configuration Tab */}
+            <TabsContent value="settings" className="space-y-6">
+              <h2 className="text-xl font-semibold">System Configuration</h2>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Operational Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>Low Cash Threshold (₦)</Label>
+                    <Input
+                      type="number"
+                      defaultValue="5000000"
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Alert when ATM cash falls below this amount
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Uptime Alert Threshold (%)</Label>
+                    <Input type="number" defaultValue="95" className="mt-1" />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Alert when uptime drops below this percentage
+                    </p>
                   </div>
                 </CardContent>
               </Card>
-            )}
 
-            {/* Tabs */}
-            <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-              <TabsList
-                data-guide="management-tabs"
-                className="grid w-full grid-cols-4"
-              >
-                <TabsTrigger value="atms">ATMs ({atms.length})</TabsTrigger>
-                <TabsTrigger value="branches">
-                  Branches ({branches.length})
-                </TabsTrigger>
-                <TabsTrigger value="issues">
-                  Log Issues
-                  {unresolvedIssues > 0 && (
-                    <Badge className="ml-2 bg-red-600 text-white">
-                      {unresolvedIssues}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="settings">Configuration</TabsTrigger>
-              </TabsList>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Integration Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>Bank Core API URL</Label>
+                    <Input
+                      placeholder="https://api.bank.com/v2"
+                      defaultValue="https://api.gtbank.com/v2"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>Cash Logistics Provider</Label>
+                    <Select defaultValue="protega">
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="protega">Protega</SelectItem>
+                        <SelectItem value="cashconnect">CashConnect</SelectItem>
+                        <SelectItem value="brinks">Brinks</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* ATMs Tab */}
-              <TabsContent value="atms" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">
-                    ATM Fleet Management
-                  </h2>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setUploadType("atms");
-                      downloadTemplate();
-                    }}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Template
-                  </Button>
-                </div>
-
-                <Card>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ATM ID</TableHead>
-                          <TableHead>Branch</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Cash Level</TableHead>
-                          <TableHead>Uptime (7d)</TableHead>
-                          <TableHead>Failure Risk</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredAtms.slice(0, 15).map((atm) => (
-                          <TableRow key={atm.id}>
-                            <TableCell className="font-medium">
-                              {atm.id}
-                            </TableCell>
-                            <TableCell>
-                              {atm.location.branchName || "—"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  atm.status === "ONLINE"
-                                    ? "default"
-                                    : "destructive"
-                                }
-                              >
-                                {atm.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              ₦
-                              {(
-                                atm.cashLevel.currentAmount / 1_000_000
-                              ).toFixed(1)}
-                              M
-                            </TableCell>
-                            <TableCell>
-                              {atm.uptimeMetrics?.uptimePercentageLast7Days ||
-                                0}
-                              %
-                            </TableCell>
-                            <TableCell>
-                              <span
-                                className={
-                                  (atm.predictiveScore?.failureRisk ?? 0) > 0.7
-                                    ? "text-red-600 font-bold"
-                                    : ""
-                                }
-                              >
-                                {Math.round(
-                                  (atm.predictiveScore?.failureRisk || 0) * 100
-                                )}
-                                %
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Button size="sm" variant="ghost">
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Branches Tab */}
-              <TabsContent value="branches" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Branch Directory</h2>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setUploadType("branches");
-                      downloadTemplate();
-                    }}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Template
-                  </Button>
-                </div>
-
-                <Card>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Branch Name</TableHead>
-                          <TableHead>LGA</TableHead>
-                          <TableHead>State</TableHead>
-                          <TableHead>Address</TableHead>
-                          <TableHead>ATM Count</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {branches.map((branch) => (
-                          <TableRow key={branch.name}>
-                            <TableCell className="font-medium">
-                              {branch.name}
-                            </TableCell>
-                            <TableCell>{branch.lga}</TableCell>
-                            <TableCell>{branch.state}</TableCell>
-                            <TableCell className="text-sm text-gray-600">
-                              {branch.address}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="secondary">
-                                {branch.atmCount}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Log Issues Tab */}
-              <TabsContent value="issues" className="space-y-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">
-                    Client-Reported Issues
-                  </h2>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="bg-red-600 hover:bg-red-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        File New Issue
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>File Issue to Vendor</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div>
-                          <Label>ATM ID</Label>
-                          <Input placeholder="ATM-LAG-XXXX" className="mt-1" />
-                        </div>
-                        <div>
-                          <Label>Issue Title</Label>
-                          <Input
-                            placeholder="e.g., Card reader not working"
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label>Priority</Label>
-                          <Select defaultValue="MEDIUM">
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="LOW">Low</SelectItem>
-                              <SelectItem value="MEDIUM">Medium</SelectItem>
-                              <SelectItem value="HIGH">High</SelectItem>
-                              <SelectItem value="CRITICAL">Critical</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label>Description</Label>
-                          <Textarea
-                            rows={5}
-                            placeholder="Provide detailed description of the issue..."
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline">Cancel</Button>
-                        <Button className="bg-red-600 hover:bg-red-700">
-                          Submit Issue
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-
-                <Card>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Issue ID</TableHead>
-                          <TableHead>ATM ID</TableHead>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Priority</TableHead>
-                          <TableHead>Date Filed</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {issues.map((issue) => (
-                          <TableRow key={issue.id}>
-                            <TableCell className="font-medium">
-                              {issue.id}
-                            </TableCell>
-                            <TableCell>{issue.atmId}</TableCell>
-                            <TableCell>{issue.title}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  issue.priority === "CRITICAL"
-                                    ? "destructive"
-                                    : issue.priority === "HIGH"
-                                    ? "destructive"
-                                    : "secondary"
-                                }
-                              >
-                                {issue.priority}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{issue.date}</TableCell>
-                            <TableCell>
-                              <Badge
-                                className={
-                                  issue.status === "OPEN"
-                                    ? "bg-orange-500"
-                                    : issue.status === "IN_PROGRESS"
-                                    ? "bg-blue-500"
-                                    : "bg-green-500"
-                                }
-                              >
-                                {issue.status}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Configuration Tab */}
-              <TabsContent value="settings" className="space-y-6">
-                <h2 className="text-xl font-semibold">System Configuration</h2>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Operational Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label>Low Cash Threshold (₦)</Label>
-                      <Input
-                        type="number"
-                        defaultValue="5000000"
-                        className="mt-1"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Alert when ATM cash falls below this amount
-                      </p>
-                    </div>
-                    <div>
-                      <Label>Uptime Alert Threshold (%)</Label>
-                      <Input type="number" defaultValue="95" className="mt-1" />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Alert when uptime drops below this percentage
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Integration Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label>Bank Core API URL</Label>
-                      <Input
-                        placeholder="https://api.bank.com/v2"
-                        defaultValue="https://api.gtbank.com/v2"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label>Cash Logistics Provider</Label>
-                      <Select defaultValue="protega">
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="protega">Protega</SelectItem>
-                          <SelectItem value="cashconnect">
-                            CashConnect
-                          </SelectItem>
-                          <SelectItem value="brinks">Brinks</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Notification Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label>SMS Provider</Label>
-                      <Select defaultValue="termii">
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="termii">Termii</SelectItem>
-                          <SelectItem value="twilio">Twilio</SelectItem>
-                          <SelectItem value="africas_talking">
-                            Africa's Talking
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Alert Email</Label>
-                      <Input
-                        type="email"
-                        defaultValue="ops@gtbank.com"
-                        className="mt-1"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notification Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>SMS Provider</Label>
+                    <Select defaultValue="termii">
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="termii">Termii</SelectItem>
+                        <SelectItem value="twilio">Twilio</SelectItem>
+                        <SelectItem value="africas_talking">
+                          Africa's Talking
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Alert Email</Label>
+                    <Input
+                      type="email"
+                      defaultValue="ops@gtbank.com"
+                      className="mt-1"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
@@ -855,6 +841,6 @@ export default function AdminManagementPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -1,78 +1,26 @@
-// /components/transparency/TransparencyHeader.tsx
-"use client";
+// /components/transparency/TransparencySummary.tsx
+import { Card, CardContent } from "@/components/ui/card";
+import { type TransparencyStats } from "@/lib/store/transparencyStore";
 
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Filters } from "@/app/ops/transparency/page";
-
-export function TransparencyHeader({
-  onFilterChange,
-}: {
-  onFilterChange: (f: Filters) => void;
-}) {
-  const [search, setSearch] = useState("");
-
+export function TransparencySummary({ stats }: { stats: TransparencyStats }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-b">
-      <h2 className="text-xl font-semibold">Transparency Dashboard</h2>
-
-      <div className="flex flex-wrap gap-2 items-center">
-        <Select
-          onValueChange={(val) =>
-            onFilterChange({ severity: val as Filters["severity"] })
-          }
-        >
-          <SelectTrigger className="w-[140px]">Severity</SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="info">Info</SelectItem>
-            <SelectItem value="warning">Warning</SelectItem>
-            <SelectItem value="error">Error</SelectItem>
-            <SelectItem value="critical">Critical</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          onValueChange={(val) =>
-            onFilterChange({ type: val as Filters["type"] })
-          }
-        >
-          <SelectTrigger className="w-40">Type</SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="user-action">User Action</SelectItem>
-            <SelectItem value="system-event">System Event</SelectItem>
-            <SelectItem value="alert">Alert</SelectItem>
-            <SelectItem value="security-event">Security</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Input
-          placeholder="Search logs..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            onFilterChange({ search: e.target.value });
-          }}
-          className="w-[220px]"
-        />
-
-        <Button
-          variant="outline"
-          onClick={() =>
-            onFilterChange({ search: "", type: "all", severity: "all" })
-          }
-        >
-          Reset
-        </Button>
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 p-4">
+      <Card>
+        <CardContent className="p-4">
+          <h4 className="text-sm font-medium text-gray-500">Total Logs</h4>
+          <p className="text-2xl font-bold">{stats.total}</p>
+        </CardContent>
+      </Card>
+      {Object.entries(stats.bySeverity).map(([key, val]) => (
+        <Card key={key}>
+          <CardContent className="p-4">
+            <h4 className="text-sm font-medium text-gray-500 capitalize">
+              {key}
+            </h4>
+            <p className="text-2xl font-bold">{val}</p>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

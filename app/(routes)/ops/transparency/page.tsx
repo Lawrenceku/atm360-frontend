@@ -8,12 +8,10 @@ import {
   selectStats,
   type TransparencyLog,
 } from "@/lib/store/transparencyStore";
-import { TransparencyHeader } from "@/components/ops/TransparencyHeader";
-import { TransparencySummary } from "@/components/ops/TransparencySummary";
-import { TransparencyCharts } from "@/components/ops/TransparencyCharts";
-import { TransparencyTable } from "@/components/ops/TransparencyTable";
-import Sidebar from "@/components/ops/Sidebar";
-import { TopNav } from "@/components/ops/TopNav";
+import { TransparencyHeader } from "@/components/ops/transparency/TransparencyHeader";
+import { TransparencySummary } from "@/components/ops/transparency/TransparencySummary";
+import { TransparencyCharts } from "@/components/ops/transparency/TransparencyCharts";
+import { TransparencyTable } from "@/components/ops/transparency/TransparencyTable";
 
 export interface Filters {
   search?: string;
@@ -67,17 +65,11 @@ export default function TransparencyDashboard() {
   });
 
   return (
-    <div className="flex h-screen bg-zenith-neutral-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-y-auto scrollbar max-w-7xl mx-auto">
-        <TopNav />
-        <div className="flex-1 p-4 max-w-7xl ">
-          <TransparencyHeader onFilterChange={setFilters} />
-          <TransparencySummary stats={stats} />
-          <TransparencyCharts logs={filtered} />
-          <TransparencyTable logs={filtered} />
-        </div>
-      </div>
+    <div className="flex-1 p-4 max-w-7xl ">
+      <TransparencyHeader onFilterChange={setFilters} />
+      <TransparencySummary stats={stats} />
+      <TransparencyCharts logs={filtered} />
+      <TransparencyTable logs={filtered} />
     </div>
   );
 }
