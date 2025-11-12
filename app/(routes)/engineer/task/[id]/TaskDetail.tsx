@@ -22,7 +22,7 @@ import SupportPanel from "@/components/engineer/SupportPanel";
 // import TaskMapCard from "@/components/engineer/TaskMapCard";
 import useFeedback from "@/lib/utils/useFeedback";
 import { toast } from "sonner";
-import UploadProof from "../UploadProof";
+import UploadProof from "../[id]/UploadProof";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { useTransparencyStore } from "@/lib/store/transparencyStore";
