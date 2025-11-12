@@ -2,7 +2,7 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Sidebar from "@/components/ops/Sidebar";
 import { TopNav } from "@/components/ops/TopNav";
-import { GuideTour } from "@/components/ops/GuideTour";
+import { GuideTour } from "@/components/guide/GuideTour";
 
 export default function OpsLayout({ children }: { children: React.ReactNode }) {
   return (

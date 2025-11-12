@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Check, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from "lucide-react";
 import {
   useAlertStore,
   selectAlerts,
@@ -11,6 +17,7 @@ import {
 import AIActionPanel from "./AIActionPanel";
 import formatText from "@/lib/utils/formatText";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
 
 const PAGE_SIZE = 10;
 
@@ -78,7 +85,7 @@ export function AlertList() {
   }
 
   return (
-    <div className="relative h-screen overflow-y-auto bg-[var(--color-zenith-neutral-50)] border border-[var(--color-zenith-neutral-200)] rounded-xl shadow-sm flex flex-col">
+    <div className="relative h-full overflow-y-auto bg-[var(--color-zenith-neutral-50)] border border-[var(--color-zenith-neutral-200)] rounded-xl shadow-sm flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-10 p-4 bg-[var(--color-zenith-neutral-100)] border-b border-[var(--color-zenith-neutral-200)] flex items-center justify-between">
         <h3 className="text-lg font-semibold text-[var(--color-zenith-neutral-900)] flex items-center gap-2">
@@ -232,7 +239,7 @@ export function AlertList() {
             className="px-3 py-1 rounded-md bg-[var(--color-zenith-neutral-200)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--color-zenith-neutral-300)] transition"
             aria-label="Previous page"
           >
-            Previous
+            <ChevronLeft className="w-5 h-5" />
           </button>
 
           <span className="text-sm text-[var(--color-zenith-neutral-600)]">
@@ -245,7 +252,7 @@ export function AlertList() {
             className="px-3 py-1 rounded-md bg-[var(--color-zenith-neutral-200)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--color-zenith-neutral-300)] transition"
             aria-label="Next page"
           >
-            Next
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       )}
@@ -260,7 +267,7 @@ export function AlertList() {
             transition={{ type: "spring", damping: 20, stiffness: 200 }}
             className="absolute top-0 right-0 bottom-0 w-[440px] bg-white shadow-2xl border-l border-[var(--color-zenith-neutral-200)] z-20"
           >
-            <div className="flex justify-between items-center p-4 border-b border-[var(--color-zenith-neutral-200)]">
+            <div className="flex justify-between items-center p-4">
               <div className="text-lg font-semibold mb-4 text-[var(--color-zenith-neutral-900)] flex items-center gap-2">
                 <span>Zeni Copilot</span>
                 <img src="/images/zeni.png" className="w-4 h-4 animate-spin" />
@@ -272,7 +279,7 @@ export function AlertList() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-
+            <Separator />
             <div className="p-4">
               <AIActionPanel
                 alert={selectedAlert}
