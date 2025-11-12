@@ -28,7 +28,7 @@ export default function IADStepProgress({ step }: { step: number }) {
                     done
                       ? "bg-green-600 text-white"
                       : active
-                      ? "bg-zenith-accent-600 text-white"
+                      ? "bg-indigo-600 text-white"
                       : "bg-gray-200 text-gray-500"
                   }`}
                 whileHover={{ scale: active ? 1.05 : 1 }}
