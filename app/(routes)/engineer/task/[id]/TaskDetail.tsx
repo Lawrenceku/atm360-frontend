@@ -15,11 +15,11 @@ import useTicketStore, {
 import ArrivalBanner from "@/components/engineer/ArrivalBanner";
 import VerificationPanel from "@/components/engineer/VerificationPanel";
 import TaskSummaryCard from "@/components/engineer/TaskSummaryCard";
-import Checklist from "@/components/engineer/CheckList";
+import Checklist from "@/components/engineer/Checklist";
 
 import SupportPanel from "@/components/engineer/SupportPanel";
 
-import TaskMapCard from "@/components/engineer/TaskMapCard";
+// import TaskMapCard from "@/components/engineer/TaskMapCard";
 import useFeedback from "@/lib/utils/useFeedback";
 import { toast } from "sonner";
 import UploadProof from "../UploadProof";
