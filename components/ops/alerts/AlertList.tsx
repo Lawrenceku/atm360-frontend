@@ -135,7 +135,7 @@ export function AlertList() {
           onClick={() =>
             setSelectedAlert({ mode: "batch", alerts: filteredAlerts })
           }
-          className="ml-auto bg-zenith-accent-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-zenith-accent-700 transition"
+          className="ml-auto mr-2 bg-zenith-accent-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-zenith-accent-700 transition my-4"
           title="Let Zeni handle all alerts"
         >
           <Sparkle />
@@ -209,7 +209,10 @@ export function AlertList() {
                     colSpan={7}
                     className="text-center py-10 text-zenith-neutral-500"
                   >
-                    No alerts at this time. System
+                    <div>
+                      <span>All active alerts have been resolved. </span>
+                      <span className="text-sm">No alerts at this time.</span>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -218,9 +221,10 @@ export function AlertList() {
                   return (
                     <tr
                       key={alert.id}
-                      onClick={() =>
-                        setSelectedAlert({ alert, mode: "single" })
-                      }
+                      onClick={() => {
+                        if (tab !== "active") return;
+                        setSelectedAlert({ alert, mode: "single" });
+                      }}
                       className={`cursor-pointer hover:bg-zenith-neutral-100 transition ${
                         alert.acknowledged ? "opacity-60" : ""
                       }`}
@@ -312,7 +316,7 @@ export function AlertList() {
 
       {/* Zeni Copilot AI Panel */}
       <AnimatePresence>
-        {selectedAlert && (
+        {tab === "active" && selectedAlert && (
           <motion.div
             initial={{ x: "100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}

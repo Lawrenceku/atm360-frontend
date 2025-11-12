@@ -26,18 +26,12 @@ const aiSteps = [
     step: "Dispatch complete — Task ticket created. Alert Resolved",
     stepCount: 1000,
   },
-  {
-    step: "Waiting for engineer to upload proof of fix...",
-    stepCount: 8000,
-  },
+  { step: "Waiting for engineer to upload proof of fix...", stepCount: 8000 },
   {
     step: "Proof of fix received. Zeni is analyzing realtime data from the ATM",
     stepCount: 8000,
   },
-  {
-    step: "ATM Operational. Ticket Closed.",
-    stepCount: 2000,
-  },
+  { step: "ATM Operational. Ticket Closed.", stepCount: 2000 },
 ];
 
 type AIActionPanelProps = {
@@ -55,35 +49,33 @@ export default function AIActionPanel({
   onClose,
   handleAcknowledge,
 }: AIActionPanelProps) {
-  const [visibleSteps, setVisibleSteps] = useState<string[]>([]);
+  const [visibleSteps, setVisibleSteps] = useState<
+    { id: string; text: string }[]
+  >([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [currentAlertIndex, setCurrentAlertIndex] = useState(0);
+
   const engineers = useEngineerStore((s) => s.engineers);
   const assignEngineer = useEngineerStore((s) => s.assignEngineer);
   const addLog = useTransparencyStore((s) => s.addLog);
-  const activeAlerts = mode === "batch" ? alerts : [alert];
   const createTicket = useTicketStore((s) => s.createTicket);
-  const [currentAlertIndex, setCurrentAlertIndex] = useState(0);
+
+  const activeAlerts = mode === "batch" ? alerts : alert ? [alert] : [];
   const currentAlert = activeAlerts[currentAlertIndex];
 
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    setTimeout(() => {
-      if (panelRef.current) {
-        panelRef.current.scrollTop = panelRef.current.scrollHeight;
-      }
-    }, 1000);
+    if (panelRef.current) {
+      panelRef.current.scrollTop = panelRef.current.scrollHeight;
+    }
   }, [visibleSteps]);
 
-  useEffect(() => {
-    if (!alert) return;
-  }, []);
-
-  // Dispatch simulation
   const handleDispatch = async (alert: Alert) => {
     const available = engineers.filter((e) => e.status === "available");
     const selected = available[Math.floor(Math.random() * available.length)];
     if (!selected) return toast.error("No available engineers to dispatch.");
+
     const ticket = await createTicket({
       atmId: alert.atmId,
       engineerId: selected.id,
@@ -93,6 +85,7 @@ export default function AIActionPanel({
       description: alert.message,
       status: "IN_PROGRESS",
     });
+
     assignEngineer(selected.id, ticket.id);
     addLog({
       type: "system-event",
@@ -103,80 +96,65 @@ export default function AIActionPanel({
     });
   };
 
-  // AI "thinking" simulation
-  // AI "thinking" simulation using setInterval
-  // useEffect(() => {
-  //   if (!alert) return;
-
-  //   let index = 0;
-  //   let intervalId: NodeJS.Timeout;
-
-  //   const startInterval = () => {
-  //     intervalId = setInterval(() => {
-  //       if (index >= aiSteps.length) {
-  //         clearInterval(intervalId); // cleanup
-  //         setCompleted(true);
-  //         handleDispatch();
-  //         return;
-  //       }
-
-  //       const step = aiSteps[index];
-  //       if (step) {
-  //         setVisibleSteps((prev) => [...prev, step.step]);
-  //         setCurrentStepIndex(index);
-  //       }
-  //       if (currentStepIndex === 6) handleAcknowledge(alert.id);
-  //       index++;
-  //     }, aiSteps[index]?.stepCount ?? 1000); // use current step duration
-  //   };
-
-  //   startInterval();
-
-  //   return () => {
-  //     clearInterval(intervalId); // cleanup on unmount
-  //   };
-  // }, [alert]);
   const simulateAIActions = async (alert: Alert) => {
-    let index = 0;
-    for (const step of aiSteps) {
-      setVisibleSteps((prev) => [...prev, step.step]);
-      setCurrentStepIndex(index);
+    for (let i = 0; i < aiSteps.length; i++) {
+      const step = aiSteps[i];
+      const stepId = `${alert.id}-${i}`; // unique key per alert per step
+      setVisibleSteps((prev) => [...prev, { id: stepId, text: step.step }]);
+      setCurrentStepIndex(i);
 
-      // acknowledge after certain step (e.g. engineer accepted)
-      if (step.step.includes("Engineer has accepted")) {
+      if (step.step.includes("Engineer has accepted"))
         handleAcknowledge(alert.id);
-      }
-
-      // Dispatch engineer when task ticket is created
-      if (step.step.includes("Dispatch complete")) {
-        await handleDispatch(alert);
-      }
+      if (step.step.includes("Dispatch complete")) await handleDispatch(alert);
 
       await new Promise((resolve) => setTimeout(resolve, step.stepCount));
-      index++;
     }
-    setCompleted(true);
   };
-  useEffect(() => {
-    if (!activeAlerts.length) return;
 
-    const runCurrent = async () => {
-      const current = activeAlerts[currentAlertIndex];
-      if (!current) return toast.info("No more active alerts to process.");
-      await simulateAIActions(current);
-      if (currentAlertIndex < activeAlerts.length - 1) {
-        setVisibleSteps([]); // reset steps for next alert
-        setCurrentStepIndex(0);
-        setCurrentAlertIndex((i) => i + 1);
-      } else {
-        setCompleted(true);
-        toast.success("Zeni has resolved all active alerts!");
-        setTimeout(onClose, 3000);
+  useEffect(() => {
+    if (!activeAlerts.length || currentAlertIndex >= activeAlerts.length)
+      return;
+
+    let cancelled = false;
+
+    const run = async () => {
+      setVisibleSteps([]);
+      setCurrentStepIndex(0);
+      const alert = activeAlerts[currentAlertIndex];
+
+      for (let i = 0; i < aiSteps.length; i++) {
+        if (cancelled) break;
+
+        const step = aiSteps[i];
+        const stepId = `${alert.id}-${i}`;
+        setVisibleSteps((prev) => [...prev, { id: stepId, text: step.step }]);
+        setCurrentStepIndex(i);
+
+        if (step.step.includes("Engineer has accepted"))
+          handleAcknowledge(alert.id);
+        if (step.step.includes("Dispatch complete"))
+          await handleDispatch(alert);
+
+        await new Promise((resolve) => setTimeout(resolve, step.stepCount));
+      }
+
+      if (!cancelled) {
+        if (currentAlertIndex < activeAlerts.length - 1) {
+          setCurrentAlertIndex((i) => i + 1);
+        } else {
+          setCompleted(true);
+          toast.success("Zeni has resolved all active alerts!");
+          setTimeout(onClose, 3000);
+        }
       }
     };
 
-    runCurrent();
-  }, [currentAlertIndex, activeAlerts.length]);
+    run();
+
+    return () => {
+      cancelled = true; // cleanup to prevent duplicates
+    };
+  }, [currentAlertIndex, activeAlerts]);
 
   return (
     <div className="relative w-[440px] p-6 overflow-hidden">
@@ -193,28 +171,29 @@ export default function AIActionPanel({
         ref={panelRef}
       >
         <AnimatePresence>
-          <h4 className="text-sm font-medium text-zenith-neutral-700">
-            Processing alert {currentAlertIndex + 1} of {activeAlerts.length} —{" "}
-            <span className="text-zenith-accent-600 font-semibold">
-              {currentAlert?.atmId}
-            </span>
-          </h4>
+          {currentAlert && (
+            <h4 className="text-sm font-medium text-zenith-neutral-700">
+              Processing alert {currentAlertIndex + 1} of {activeAlerts.length}{" "}
+              —{" "}
+              <span className="text-zenith-accent-600 font-semibold">
+                {currentAlert.atmId}
+              </span>
+            </h4>
+          )}
 
           {visibleSteps.map((step, index) => (
             <motion.div
-              key={step}
+              key={step.id} // unique per alert-step
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="relative flex items-start gap-4"
             >
-              {/* Timeline connector */}
               {index !== visibleSteps.length - 1 && (
                 <div className="absolute left-2 top-6 w-[2px] h-[calc(100%+12px)] bg-[var(--color-zenith-neutral-200)]" />
               )}
 
-              {/* Step Icon */}
               <div className="relative z-10">
                 {completed || index < currentStepIndex ? (
                   <CheckCircle2 className="w-5 h-5 text-[var(--color-zenith-success)]" />
@@ -225,7 +204,6 @@ export default function AIActionPanel({
                 )}
               </div>
 
-              {/* Step Text */}
               <motion.p
                 className={`text-sm leading-snug ${
                   index === currentStepIndex
@@ -233,7 +211,7 @@ export default function AIActionPanel({
                     : "text-[var(--color-zenith-neutral-800)]"
                 }`}
               >
-                {step}
+                {step.text}
               </motion.p>
               {index === currentStepIndex && (
                 <div className="ml-auto my-auto h-2 w-2 rounded-full bg-zenith-accent-600 animate-pulse" />
@@ -254,17 +232,10 @@ export default function AIActionPanel({
         </motion.button>
       )}
 
-      {/* AI background glow */}
       <motion.div
         className="absolute inset-0 -z-10 bg-gradient-to-br from-[var(--color-zenith-accent-50)] via-[var(--color-zenith-neutral-50)] to-[var(--color-zenith-accent-100)] opacity-0"
-        animate={{
-          opacity: completed ? 0.15 : [0.1, 0.3, 0.1],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        animate={{ opacity: completed ? 0.15 : [0.1, 0.3, 0.1] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       />
     </div>
   );

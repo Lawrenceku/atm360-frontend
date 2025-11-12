@@ -13,15 +13,6 @@ export default function AttentionButton({
 }) {
   return (
     <motion.button
-      style={{
-        padding: "1rem 2rem",
-        fontSize: "1.2rem",
-        border: "none",
-        borderRadius: "8px",
-        background: "#0070f3",
-        color: "white",
-        cursor: "pointer",
-      }}
       animate={{
         // Vertical bounce (y), then wiggle (rotate)
         y: [0, -20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -50,14 +41,14 @@ export default function AttentionButton({
         ],
       }}
       transition={{
-        duration: 13.4, // 0.6 (bounce) + 7 (pause) + 0.8 (wiggle) + 5 (pause)
+        duration: 3.4, // 0.6 (bounce) + 7 (pause) + 0.8 (wiggle) + 5 (pause)
         times: [
           0,
           0.045,
           0.09, // bounce up and down
-          0.6 / 13.4, // end bounce ~0.6s
-          7.6 / 13.4, // pause until ~7.6s
-          8.4 / 13.4, // end wiggle ~8.4s
+          0.6 / 3.4, // end bounce ~0.6s
+          7.6 / 3.4, // pause until ~7.6s
+          8.4 / 3.4, // end wiggle ~8.4s
           1, // rest of loop
         ],
         repeat: Infinity,
