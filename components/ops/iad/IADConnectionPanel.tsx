@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plug, Unplug, RefreshCcw, Activity, Wifi } from "lucide-react";
 import { useIADStore } from "@/lib/store/IADStore";
-import { connectIAD, disconnectIAD, syncIADData } from "@/lib/api/IiadApi";
+import { connectIAD, disconnectIAD, syncIADData } from "@/lib/api/iadApi";
 import { useTransparencyStore } from "@/lib/store/transparencyStore";
 import { toast } from "sonner";
 

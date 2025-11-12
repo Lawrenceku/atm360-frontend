@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { IADPerson, useIADStore } from "@/lib/store/IADStore";
-import { addIADPerson, removeIADPerson } from "@/lib/api/IiadApi";
+import { addIADPerson, removeIADPerson } from "@/lib/api/iadApi";
 import { useTransparencyStore } from "@/lib/store/transparencyStore";
 
 export default function IADPersonnelManager() {

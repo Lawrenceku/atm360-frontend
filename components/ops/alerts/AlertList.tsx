@@ -20,6 +20,7 @@ import formatText from "@/lib/utils/formatText";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AttentionButton from "@/components/BouncyButton";
 
 const PAGE_SIZE = 10;
 
@@ -130,15 +131,15 @@ export function AlertList() {
       </div>
 
       {tab === "active" && filteredAlerts.length !== 0 && (
-        <button
+        <AttentionButton
           onClick={() =>
             setSelectedAlert({ mode: "batch", alerts: filteredAlerts })
           }
           className="ml-auto bg-zenith-accent-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-zenith-accent-700 transition"
           title="Let Zeni handle all alerts"
         >
-          <Sparkle className="animate-ping" />
-        </button>
+          <Sparkle />
+        </AttentionButton>
       )}
 
       <div className="overflow-x-auto">

@@ -192,8 +192,12 @@ export default function AdminManagementPage() {
             setUploading(false);
             setUploadOpen(true);
           }, 500);
-        } catch (err: any) {
-          setParseErrors([`Excel parse error: ${err.message}`]);
+        } catch (err) {
+          setParseErrors([
+            `Excel parse error: ${
+              err instanceof Error ? err?.message : "Failed to read"
+            }`,
+          ]);
           setUploading(false);
         }
       };

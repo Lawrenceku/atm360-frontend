@@ -2,8 +2,14 @@ import { motion } from "framer-motion";
 
 export default function AttentionButton({
   children,
+  onClick,
+  className,
+  title,
 }: {
   children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+  title?: string;
 }) {
   return (
     <motion.button
@@ -57,6 +63,9 @@ export default function AttentionButton({
         repeat: Infinity,
         ease: "easeInOut",
       }}
+      className={className}
+      onClick={onClick}
+      title={title}
     >
       {children || "Click Me"}
     </motion.button>

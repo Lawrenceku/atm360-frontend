@@ -1,11 +1,11 @@
 // app/operations/connect-iad/page.tsx
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
-import IADStepProgress from "@/components/ops/IADStepProgress";
-import IADVerificationForm from "@/components/ops/IADVerificationForm";
-import IADConnectionPanel from "@/components/ops/IADConnectionPanel";
-import IADPersonnelManager from "@/components/ops/IADPersonnelManager";
-import IADDataFlowViz from "@/components/ops/IADDataFlowViz";
+import IADStepProgress from "@/components/ops/iad/IADStepProgress";
+import IADVerificationForm from "@/components/ops/iad/IADVerificationForm";
+import IADConnectionPanel from "@/components/ops/iad/IADConnectionPanel";
+import IADPersonnelManager from "@/components/ops/iad/IADPersonnelManager";
+import IADDataFlowViz from "@/components/ops/iad/IADDataFlowViz";
 import { useIADStore } from "@/lib/store/IADStore";
 import { useTransparencyStore } from "@/lib/store/transparencyStore";
 import Sidebar from "@/components/ops/Sidebar";

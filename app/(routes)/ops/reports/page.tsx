@@ -132,9 +132,9 @@ export default function ReportsPage() {
       "Dec",
     ];
     const baseTransactions = metrics.estimatedTransactions;
-
     return months.map((month, i) => ({
       month,
+
       value: Math.floor(baseTransactions * (0.7 + Math.random() * 0.6)),
       uptime: Math.floor(85 + Math.random() * 12),
     }));
