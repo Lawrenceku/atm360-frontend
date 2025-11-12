@@ -13,7 +13,7 @@ export default function OpsLayout({ children }: { children: React.ReactNode }) {
           <TopNav />
 
           {/* <GuideTour /> */}
-          {children}
+          <div className="flex-1 p-4">{children}</div>
         </div>
       </div>
     </ProtectedRoute>
