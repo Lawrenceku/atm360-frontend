@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAtmStore, selectAtms } from "@/lib/store/atmStore";
 import { useTicketStore, selectTickets } from "@/lib/store/ticketStore";
 import { calculateRecurringFaults } from "@/lib/utils/atmMetrics";
-import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -25,12 +24,9 @@ export function RecurringFaults() {
 
   // Calculate cumulative percentage for Pareto chart
   const totalFaults = faults.reduce((sum, f) => sum + f.faultCount, 0);
-  // let cumulative = 0;
-  const [cumulative, setCumulative] = useState(0);
-
+  let cumulative = 0;
   const chartData = faults.map((fault, index) => {
-    // cumulative += fault.faultCount;
-    setCumulative((prev) => prev + fault.faultCount);
+    cumulative += fault.faultCount;
     return {
       name: fault.atmId.replace("ATM-", ""),
       faults: fault.faultCount,
@@ -83,7 +79,6 @@ export function RecurringFaults() {
                         return [`${value}%`, "Cumulative %"];
                       return [value, "Faults"];
                     }}
-                    // @ts-expect-error type issue
                     labelFormatter={(label, payload) => {
                       const data = payload?.[0]?.payload;
                       return data?.location || label;

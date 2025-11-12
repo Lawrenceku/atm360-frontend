@@ -2,14 +2,10 @@
 
 import Sidebar from "@/components/ops/Sidebar";
 import { TopNav } from "@/components/ops/TopNav";
-//@ts-expect-error file-path-module
 import Filters from "@/components/ops/Filters";
-//@ts-expect-error file-path-module
 import KpiCard from "@/components/ops/KpiCard";
 import ActivityChart from "@/components/ops/ActivityChart";
-//@ts-expect-error file-path-module
 import TopicList from "@/components/ops/TopicList";
-//@ts-expect-error file-path-module
 import Leaderboard from "@/components/ops/Leaderboard";
 import { AtmNetworkUptime } from "@/components/ops/kpis/AtmNetworkUptime";
 
@@ -65,75 +61,71 @@ export default function OpsPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopNav />
-        <Filters />
+    <>
+      <Filters />
 
-        <div className="flex-1 overflow-auto p-6 space-y-6">
-          {/* Top KPI Row */}
-          <div
-            data-guide="kpi-cards"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-          >
-            <KpiCard title="Active ATMs" value={`${onlineAtms}/${totalAtms}`} />
-            <KpiCard title="Network Uptime" value={`${uptime}%`} />
-            <KpiCard title="Mean Time to Repair" value={formatTime(mttr)} />
-            <KpiCard title="Active Tickets" value={activeTickets?.toString()} />
+      <div className="flex-1 overflow-auto p-6 space-y-6">
+        {/* Top KPI Row */}
+        <div
+          data-guide="kpi-cards"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          <KpiCard title="Active ATMs" value={`${onlineAtms}/${totalAtms}`} />
+          <KpiCard title="Network Uptime" value={`${uptime}%`} />
+          <KpiCard title="Mean Time to Repair" value={formatTime(mttr)} />
+          <KpiCard title="Active Tickets" value={activeTickets?.toString()} />
+        </div>
+
+        {/* Main KPI Section - Row 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div data-guide="network-uptime">
+            <AtmNetworkUptime />
           </div>
+          <SLACompliance />
+          <MeanTimeToRepair />
+        </div>
 
-          {/* Main KPI Section - Row 1 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div data-guide="network-uptime">
-              <AtmNetworkUptime />
-            </div>
-            <SLACompliance />
-            <MeanTimeToRepair />
+        {/* Main KPI Section - Row 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <IncidentBreakdown />
+          <CashAvailability />
+        </div>
+
+        {/* Main KPI Section - Row 3 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AtmDowntimeByRegion />
+          <RegionalPerformance />
+        </div>
+
+        {/* Main KPI Section - Row 4 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FraudDetectionRate />
+          <EngineerUtilization />
+        </div>
+
+        {/* Main KPI Section - Row 5 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CashReplenishmentTime />
+          <TotalCostOfOperations />
+        </div>
+
+        {/* Main KPI Section - Row 6 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TopAtmsByVolume />
+          <RecurringFaults />
+        </div>
+
+        {/* Activity Chart and Other Components */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div data-guide="activity-chart">
+            <ActivityChart />
           </div>
-
-          {/* Main KPI Section - Row 2 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <IncidentBreakdown />
-            <CashAvailability />
-          </div>
-
-          {/* Main KPI Section - Row 3 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AtmDowntimeByRegion />
-            <RegionalPerformance />
-          </div>
-
-          {/* Main KPI Section - Row 4 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FraudDetectionRate />
-            <EngineerUtilization />
-          </div>
-
-          {/* Main KPI Section - Row 5 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <CashReplenishmentTime />
-            <TotalCostOfOperations />
-          </div>
-
-          {/* Main KPI Section - Row 6 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TopAtmsByVolume />
-            <RecurringFaults />
-          </div>
-
-          {/* Activity Chart and Other Components */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div data-guide="activity-chart">
-              <ActivityChart />
-            </div>
-            <div className="space-y-4">
-              <TopicList />
-              <Leaderboard />
-            </div>
+          <div className="space-y-4">
+            <TopicList />
+            <Leaderboard />
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
