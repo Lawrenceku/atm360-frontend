@@ -22,7 +22,7 @@ import { haversineDistance } from "@/lib/utils/geolocation";
 
 // Dynamic Map Component
 const AtmLocationMap = dynamic(
-  () => import("@/components/locator/AtmLocationMap"),
+  () => import("@/components/locator/ATMLocationMap"),
   {
     ssr: false,
     loading: () => (
@@ -62,6 +62,7 @@ const StatusBadge = ({ status }: { status: ATM["status"] }) => {
 export default function AtmDetailsPage() {
   const params = useParams();
   const id = params?.id as string;
+  //@ts-expect-error id may be undefined
   const atm = useAtmStore(selectGetById(id));
 
   const [userLocation, setUserLocation] = useState<{
@@ -106,7 +107,8 @@ export default function AtmDetailsPage() {
               ATM Not Found
             </h1>
             <p className="text-gray-600 mb-6">
-              The ATM you're looking for doesn't exist or has been removed.
+              The ATM you&apos;re looking for doesn&apos;t exist or has been
+              removed.
             </p>
             <Link
               href="/locator"
