@@ -41,24 +41,31 @@ const aiSteps = [
 ];
 
 type AIActionPanelProps = {
-  alert: Alert;
+  alert?: Alert;
+  alerts?: Alert[];
+  mode?: "single" | "batch";
   onClose: () => void;
   handleAcknowledge: (id: string) => void;
 };
 
 export default function AIActionPanel({
   alert,
+  alerts = [],
+  mode = "single",
   onClose,
   handleAcknowledge,
 }: AIActionPanelProps) {
   const [visibleSteps, setVisibleSteps] = useState<string[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [completed, setCompleted] = useState(false);
-
   const engineers = useEngineerStore((s) => s.engineers);
   const assignEngineer = useEngineerStore((s) => s.assignEngineer);
   const addLog = useTransparencyStore((s) => s.addLog);
+  const activeAlerts = mode === "batch" ? alerts : [alert];
   const createTicket = useTicketStore((s) => s.createTicket);
+  const [currentAlertIndex, setCurrentAlertIndex] = useState(0);
+  const currentAlert = activeAlerts[currentAlertIndex];
+
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     setTimeout(() => {
@@ -67,13 +74,16 @@ export default function AIActionPanel({
       }
     }, 1000);
   }, [visibleSteps]);
+
+  useEffect(() => {
+    if (!alert) return;
+  }, []);
+
   // Dispatch simulation
-  const handleDispatch = async () => {
+  const handleDispatch = async (alert: Alert) => {
     const available = engineers.filter((e) => e.status === "available");
     const selected = available[Math.floor(Math.random() * available.length)];
-    console.log(available, selected, engineers);
-    if (!selected)
-      toast.error("No available engineers to dispatch. Contacting Ops...");
+    if (!selected) return toast.error("No available engineers to dispatch.");
     const ticket = await createTicket({
       atmId: alert.atmId,
       engineerId: selected.id,
@@ -83,7 +93,6 @@ export default function AIActionPanel({
       description: alert.message,
       status: "IN_PROGRESS",
     });
-
     assignEngineer(selected.id, ticket.id);
     addLog({
       type: "system-event",
@@ -96,45 +105,101 @@ export default function AIActionPanel({
 
   // AI "thinking" simulation
   // AI "thinking" simulation using setInterval
-  useEffect(() => {
-    if (!alert) return;
+  // useEffect(() => {
+  //   if (!alert) return;
 
+  //   let index = 0;
+  //   let intervalId: NodeJS.Timeout;
+
+  //   const startInterval = () => {
+  //     intervalId = setInterval(() => {
+  //       if (index >= aiSteps.length) {
+  //         clearInterval(intervalId); // cleanup
+  //         setCompleted(true);
+  //         handleDispatch();
+  //         return;
+  //       }
+
+  //       const step = aiSteps[index];
+  //       if (step) {
+  //         setVisibleSteps((prev) => [...prev, step.step]);
+  //         setCurrentStepIndex(index);
+  //       }
+  //       if (currentStepIndex === 6) handleAcknowledge(alert.id);
+  //       index++;
+  //     }, aiSteps[index]?.stepCount ?? 1000); // use current step duration
+  //   };
+
+  //   startInterval();
+
+  //   return () => {
+  //     clearInterval(intervalId); // cleanup on unmount
+  //   };
+  // }, [alert]);
+  const simulateAIActions = async (alert: Alert) => {
     let index = 0;
-    let intervalId: NodeJS.Timeout;
+    for (const step of aiSteps) {
+      setVisibleSteps((prev) => [...prev, step.step]);
+      setCurrentStepIndex(index);
 
-    const startInterval = () => {
-      intervalId = setInterval(() => {
-        if (index >= aiSteps.length) {
-          clearInterval(intervalId); // cleanup
-          setCompleted(true);
-          handleDispatch();
-          return;
-        }
+      // acknowledge after certain step (e.g. engineer accepted)
+      if (step.step.includes("Engineer has accepted")) {
+        handleAcknowledge(alert.id);
+      }
 
-        const step = aiSteps[index];
-        if (step) {
-          setVisibleSteps((prev) => [...prev, step.step]);
-          setCurrentStepIndex(index);
-        }
-        if (currentStepIndex === 6) handleAcknowledge(alert.id);
-        index++;
-      }, aiSteps[index]?.stepCount ?? 1000); // use current step duration
+      // Dispatch engineer when task ticket is created
+      if (step.step.includes("Dispatch complete")) {
+        await handleDispatch(alert);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, step.stepCount));
+      index++;
+    }
+    setCompleted(true);
+  };
+  useEffect(() => {
+    if (!activeAlerts.length) return;
+
+    const runCurrent = async () => {
+      const current = activeAlerts[currentAlertIndex];
+      if (!current) return toast.info("No more active alerts to process.");
+      await simulateAIActions(current);
+      if (currentAlertIndex < activeAlerts.length - 1) {
+        setVisibleSteps([]); // reset steps for next alert
+        setCurrentStepIndex(0);
+        setCurrentAlertIndex((i) => i + 1);
+      } else {
+        setCompleted(true);
+        toast.success("Zeni has resolved all active alerts!");
+        setTimeout(onClose, 3000);
+      }
     };
 
-    startInterval();
-
-    return () => {
-      clearInterval(intervalId); // cleanup on unmount
-    };
-  }, [alert]);
+    runCurrent();
+  }, [currentAlertIndex, activeAlerts.length]);
 
   return (
     <div className="relative w-[440px] p-6 overflow-hidden">
+      <motion.div
+        className="absolute top-0 left-0 h-1 bg-zenith-accent-600"
+        animate={{
+          width: `${((currentAlertIndex + 1) / activeAlerts.length) * 100}%`,
+        }}
+        transition={{ duration: 0.5 }}
+      />
+
       <div
         className="relative space-y-5 overflow-y-auto max-h-[400px] scrollbar"
         ref={panelRef}
       >
         <AnimatePresence>
+          <h4 className="text-sm font-medium text-zenith-neutral-700">
+            Processing alert {currentAlertIndex + 1} of {activeAlerts.length} —{" "}
+            <span className="text-zenith-accent-600 font-semibold">
+              {currentAlert?.atmId}
+            </span>
+          </h4>
+
           {visibleSteps.map((step, index) => (
             <motion.div
               key={step}
