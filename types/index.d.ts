@@ -21,6 +21,10 @@ declare global {
     message: string;
     timestamp: string;
     acknowledged: boolean;
+    prediction?: {
+      reasoning: string;
+      confidence: number; // 0 to 1
+    };
   };
 
   type TicketResolution = {

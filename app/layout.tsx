@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { CustomToaster } from "../components/CustomToaster";
+import Script from "next/script";
 const monaSans = localFont({
   src: [
     {
@@ -39,6 +40,7 @@ export default function RootLayout({
         {children}
         <CustomToaster />
       </body>
+      <Script src="https://js.puter.com/v2/"></Script>
     </html>
   );
 }

@@ -21,8 +21,13 @@ export const mockAlerts: Alert[] = [
     type: "CASH_LOW",
     severity: "HIGH",
     message: "Cash levels below 15%. Refill required soon.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
+    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
     acknowledged: true,
+    prediction: {
+      reasoning:
+        "Predicted cash depletion based on historical transaction data.",
+      confidence: 0.92,
+    },
   },
   {
     id: "2",
@@ -30,8 +35,12 @@ export const mockAlerts: Alert[] = [
     type: "NETWORK_ISSUE",
     severity: "CRITICAL",
     message: "ATM is offline due to network failure.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(), // 10 mins ago
+    timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
     acknowledged: true,
+    prediction: {
+      reasoning: "Network instability detected over the past 24 hours.",
+      confidence: 0.85,
+    },
   },
   {
     id: "3",
@@ -39,8 +48,12 @@ export const mockAlerts: Alert[] = [
     type: "CARD_JAM",
     severity: "MEDIUM",
     message: "Card reader jam detected. Manual intervention needed.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
     acknowledged: false,
+    prediction: {
+      reasoning: "Frequent card jam reports in this ATM model and location.",
+      confidence: 0.78,
+    },
   },
   {
     id: "4",
@@ -48,8 +61,12 @@ export const mockAlerts: Alert[] = [
     type: "MAINTENANCE_DUE",
     severity: "LOW",
     message: "Scheduled maintenance due in 3 days.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     acknowledged: false,
+    prediction: {
+      reasoning: "Maintenance schedule based on system configuration.",
+      confidence: 1.0,
+    },
   },
   {
     id: "5",
@@ -59,6 +76,11 @@ export const mockAlerts: Alert[] = [
     message: "Unauthorized access attempt detected.",
     timestamp: new Date().toISOString(),
     acknowledged: false,
+    prediction: {
+      reasoning:
+        "Pattern analysis of access logs indicating potential threats.",
+      confidence: 0.95,
+    },
   },
 ];
 
