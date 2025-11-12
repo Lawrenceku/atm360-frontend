@@ -194,7 +194,7 @@ export default function ActivityPage() {
       {/* AI Alert Banner */}
 
       {/* Tabs */}
-      <Card className="flex items-center gap-2 w-full rounded-lg py-4 animate-pulse bg-zenith-accent-200/50 border-zenith-accent-300 text-zenith-accent-800 !flex-row">
+      <Card className="flex items-center gap-2 w-full rounded-lg animate-pulse bg-zenith-accent-200/50 border-zenith-accent-300 text-zenith-accent-800 !flex-row py-2 px-3">
         <Info size={20} />
         AI Monitoring is active...
       </Card>
@@ -237,14 +237,14 @@ export default function ActivityPage() {
       </div>
 
       {/* AI Alert Banner */}
-      <Card className="border-orange-200 bg-orange-50 flex !flex-row items-center gap-2 w-full rounded-lg py-1 px-3">
+      <Card className="border-orange-200 bg-orange-50 flex !flex-row items-center gap-2 w-full rounded-lg py-2 px-3">
         <AlertTriangle className="w-5 h-5 text-orange-600" />
         <span className="text-sm text-orange-700 flex-1">
           Zeni is analyzing patterns. 3 active alerts require attention.
         </span>
         <a
           href="/alerts"
-          className="flex items-center gap-1 bg-orange-700/80 p-2 rounded-lg text-orange-100 ml-auto hover:bg-orange-700 transition px-4 py-2"
+          className="flex items-center gap-1 bg-orange-700/80 p-2 rounded-lg text-orange-100 ml-auto hover:bg-orange-700 transition px-3 py-1 text-sm font-medium"
         >
           View <ArrowUpRight size={20} />
         </a>

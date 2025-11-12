@@ -1,8 +1,6 @@
 "use client";
 
-import Sidebar from "@/components/ops/Sidebar";
-import { TopNav } from "@/components/ops/TopNav";
-import { AlertList } from "@/components/ops/AlertList";
+import { AlertList } from "@/components/ops/alerts/AlertList";
 
 export default function AlertsPage() {
   return (
