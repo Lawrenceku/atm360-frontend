@@ -170,9 +170,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
   }, [atm]);
 
   const handleArrived = () => {
-    if (!arrived && atm) {
+    if (!arrived && atm && ticket) {
       setArrived(true);
-      useTicketStore.getState().updateTicket(ticket!.id, {
+      useTicketStore.getState().updateTicket(ticket.id, {
         geoValidation: {
           engineerLat: userLocation?.lat || 0,
           engineerLng: userLocation?.lng || 0,
@@ -185,25 +185,26 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
         severity: "info",
         user: { role: "engineer", id: user?.id },
       });
-      toast.success("Arrival confirmed!");
+      toast.success("Arrival confirmed! Waiting for branch verification...");
     }
   };
 
-  const handleVerificationComplete = () => {
-    if (!verified) {
+  // Check if branch has verified (ticket status becomes IN_PROGRESS)
+  useEffect(() => {
+    if (arrived && ticket?.status === "IN_PROGRESS" && !verified) {
       setVerified(true);
       setRepairStarted(true);
       setRepairStartTime(new Date());
       addLog({
         type: "user-action",
-        details: `On-site verification successful for Ticket #${ticket?.id}`,
+        details: `Branch verified engineer for Ticket #${ticket.id}`,
         severity: "info",
         user: { role: "engineer", id: user?.id },
       });
       vibrate();
-      toast.success("Verification successful! Repair timer started.");
+      toast.success("Verification successful! You can now proceed with repairs.");
     }
-  };
+  }, [arrived, ticket?.status, verified, ticket?.id, user?.id, vibrate, addLog]);
 
   const handleProofUpload = async (base64: string) => {
     if (!ticket || !repairStartTime) return;
@@ -234,11 +235,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
         meta: { proofLength: base64.length },
       });
       
-      // Simulate branch confirmation after a delay
-      setTimeout(() => {
-        setBranchConfirmed(true);
-        toast.success("Branch confirmed work completion!");
-      }, 3000);
+      // Don't auto-confirm - wait for branch to actually confirm
+      // Branch confirmation will update ticket status to RESOLVED
     } catch {
       setError("Failed to upload proof.");
       toast.error("Failed to upload proof.");
@@ -252,6 +250,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
       setActionLoading(false);
     }
   };
+  // Check if branch has confirmed work (ticket status becomes RESOLVED)
+  useEffect(() => {
+    if (ticket?.status === "RESOLVED" && !branchConfirmed) {
+      setBranchConfirmed(true);
+      toast.success("Branch has confirmed work completion!");
+    }
+  }, [ticket?.status, branchConfirmed]);
+
   async function handleMarkComplete() {
     if (!ticket || !repairStartTime) return;
     const proofUrl =
@@ -277,18 +283,22 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
       const timeSpent = Math.floor(
         (new Date().getTime() - repairStartTime.getTime()) / 60000
       );
-      await useTicketStore.getState().resolveTicket(ticket.id, {
-        summary: "Issue resolved successfully",
-        resolvedAt: new Date().toISOString(),
-        timeSpentMinutes: timeSpent,
-        proofPhotoUrl: proofUrl,
+      // Ticket is already RESOLVED by branch, just update final details
+      useTicketStore.getState().updateTicket(ticket.id, {
+        resolution: {
+          ...(ticket.resolution || {}),
+          summary: "Issue resolved successfully",
+          resolvedAt: new Date().toISOString(),
+          timeSpentMinutes: timeSpent,
+          proofPhotoUrl: proofUrl,
+        },
       });
       setChecklist((prev) =>
         prev.map((c) => (c.id === "complete" ? { ...c, done: true } : c))
       );
       addLog({
         type: "user-action",
-        details: `Engineer marked Ticket #${ticket.id} as complete. Total time: ${timeSpent} minutes`,
+        details: `Engineer completed Ticket #${ticket.id}. Total time: ${timeSpent} minutes`,
         severity: "info",
         user: { role: "engineer", id: user?.id },
       });
@@ -379,7 +389,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-zenith-neutral-50 to-zenith-accent-50">
       <Header title={`Task #${ticket.id}`} subtitle="Engineer Workflow" />
       <MultiStepProgress steps={steps} activeStep={activeStep} />
       <main className="flex flex-col md:flex-row gap-6 items-center md:items-start max-w-6xl mx-auto px-4 py-6">
@@ -404,13 +414,18 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
                     />
                   </div>
                 )}
-                {/* Temporary Arrived button for demo */}
-                <button
-                  onClick={handleArrived}
-                  className="mt-4 w-full px-6 py-3 bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white rounded-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all font-medium"
-                >
-                  Mark as Arrived
-                </button>
+                {/* Skip/Arrived button for demo */}
+                <div className="mt-4 space-y-2">
+                  <button
+                    onClick={handleArrived}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white rounded-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all font-medium shadow-lg"
+                  >
+                    Mark as Arrived (Skip for Demo)
+                  </button>
+                  <p className="text-xs text-center text-zenith-neutral-500">
+                    In production, arrival is detected automatically when within 50m
+                  </p>
+                </div>
               </motion.div>
             )}
 
@@ -422,10 +437,20 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="w-full"
               >
-                <VerificationPanel
-                  code={verificationCode}
-                  onVerified={handleVerificationComplete}
-                />
+                <div className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-6">
+                  <VerificationPanel
+                    code={verificationCode}
+                    onVerified={() => {}} // Verification happens on branch side
+                  />
+                  <div className="mt-4 p-4 bg-zenith-accent-50 rounded-lg border border-zenith-accent-200">
+                    <p className="text-sm text-zenith-accent-700 font-medium">
+                      Waiting for branch staff to verify your code...
+                    </p>
+                    <p className="text-xs text-zenith-accent-600 mt-1">
+                      Share code <strong>{verificationCode}</strong> with branch staff. They will verify it matches their system.
+                    </p>
+                  </div>
+                </div>
               </motion.div>
             )}
 
@@ -438,14 +463,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
               >
                 {/* Repair Timer */}
                 {repairStarted && repairStartTime && (
-                  <div className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-4">
+                  <div className="bg-white rounded-lg shadow-lg border border-zenith-accent-200 p-4">
                     <div className="flex items-center gap-3">
                       <Clock className="w-5 h-5 text-zenith-accent-600" />
                       <div>
                         <p className="text-sm text-zenith-neutral-500">
                           Repair Time
                         </p>
-                        <p className="text-lg font-semibold text-zenith-neutral-900">
+                        <p className="text-lg font-semibold text-zenith-accent-700">
                           {Math.floor(
                             (new Date().getTime() - repairStartTime.getTime()) /
                               60000
@@ -472,31 +497,53 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
                       />
                     </div>
                     {!branchConfirmed && (
-                      <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                        <p className="text-sm text-yellow-700">
+                      <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-sm text-yellow-700 font-medium">
                           Waiting for branch confirmation...
+                        </p>
+                        <p className="text-xs text-yellow-600 mt-1">
+                          Branch staff must review and confirm the work before you can complete the task.
                         </p>
                       </div>
                     )}
                     {branchConfirmed && (
-                      <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200 flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <p className="text-sm text-green-700">
-                          Branch confirmed work completion
-                        </p>
+                      <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200 flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-green-700 font-medium">
+                            Branch confirmed work completion
+                          </p>
+                          <p className="text-xs text-green-600 mt-1">
+                            You can now mark the task as complete.
+                          </p>
+                        </div>
                       </div>
                     )}
                   </section>
                 )}
 
-                {ticket.resolution?.proofPhotoUrl && branchConfirmed && (
-                  <button
-                    onClick={handleMarkComplete}
-                    disabled={actionLoading}
-                    className="bg-zenith-accent-600 hover:bg-zenith-accent-500 disabled:opacity-60 w-full text-white py-3 rounded-lg transition font-medium"
-                  >
-                    {actionLoading ? "Completing..." : "Mark Task Complete"}
-                  </button>
+                {ticket.resolution?.proofPhotoUrl && (
+                  <div className="space-y-3">
+                    {!branchConfirmed && (
+                      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-sm text-yellow-700 font-medium">
+                          Waiting for branch confirmation...
+                        </p>
+                        <p className="text-xs text-yellow-600 mt-1">
+                          Branch staff must confirm the work completion before you can finish the task.
+                        </p>
+                      </div>
+                    )}
+                    {branchConfirmed && (
+                      <button
+                        onClick={handleMarkComplete}
+                        disabled={actionLoading}
+                        className="w-full px-6 py-3 bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white rounded-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all font-medium shadow-lg disabled:opacity-60"
+                      >
+                        {actionLoading ? "Completing..." : "Mark Task Complete"}
+                      </button>
+                    )}
+                  </div>
                 )}
                 <SupportPanel />
               </motion.div>

@@ -25,10 +25,9 @@ export default function BranchSidebar({ branchId }: BranchSidebarProps) {
   };
 
   const navItems = [
-    { href: `/branch/${branchId}`, label: "Dashboard", icon: Activity },
-    { href: `/branch/${branchId}/atms`, label: "ATMs", icon: MapPin },
-    { href: `/branch/${branchId}/verify`, label: "Verify Engineer", icon: ShieldCheck },
-    { href: `/branch/${branchId}/complaints`, label: "Complaints", icon: MessageSquare },
+    { href: `/branch/${encodeURIComponent(branchId)}`, label: "Dashboard", icon: Activity },
+    { href: `/branch/${encodeURIComponent(branchId)}/atms`, label: "ATMs", icon: MapPin },
+    { href: `/branch/${encodeURIComponent(branchId)}/complaints`, label: "Complaints", icon: MessageSquare },
   ];
 
   return (
@@ -70,7 +69,9 @@ export default function BranchSidebar({ branchId }: BranchSidebarProps) {
         </div>
 
         <div className="px-4 pb-4 border-b border-zenith-neutral-200">
-          <p className="text-xs text-zenith-neutral-500">Branch ID: {branchId}</p>
+          <p className="text-xs text-zenith-neutral-500">
+            Branch: {decodeURIComponent(branchId)}
+          </p>
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-2">

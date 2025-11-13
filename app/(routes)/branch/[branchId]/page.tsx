@@ -21,17 +21,31 @@ export default function BranchPage() {
   const router = useRouter();
   const atms = useAtmStore(selectAtms) ?? [];
 
+  // Decode branchId (handles spaces and special characters)
+  const decodedBranchId = useMemo(() => {
+    try {
+      return decodeURIComponent(branchId || "");
+    } catch {
+      return branchId || "";
+    }
+  }, [branchId]);
+
   // Get ATMs for this branch - filter by branchName matching branchId
   const branchAtms = useMemo(() => {
-    if (!branchId) return [];
-    // Match branchId with branchName (branchId could be the branch name or a normalized version)
+    if (!decodedBranchId) return [];
+    // Match branchId with branchName (case-insensitive, handles spaces)
     return atms.filter((atm) => {
       const branchName = atm.location.branchName || "";
-      // Check if branchId matches branchName (case-insensitive, partial match)
-      return branchName.toLowerCase().includes(branchId.toLowerCase()) ||
-        branchId.toLowerCase().includes(branchName.toLowerCase().split(" - ")[1] || "");
+      const normalizedBranchName = branchName.toLowerCase().trim();
+      const normalizedBranchId = decodedBranchId.toLowerCase().trim();
+      
+      // Check if branchId matches full branchName or the location part after " - "
+      return normalizedBranchName === normalizedBranchId ||
+        normalizedBranchName.includes(normalizedBranchId) ||
+        normalizedBranchId.includes(normalizedBranchName.split(" - ")[1] || "") ||
+        normalizedBranchName.split(" - ")[1]?.toLowerCase() === normalizedBranchId;
     });
-  }, [atms, branchId]);
+  }, [atms, decodedBranchId]);
 
   // Get active tickets for branch ATMs
   const activeTickets = useMemo(() => {
@@ -75,111 +89,93 @@ export default function BranchPage() {
               Branch Dashboard
             </h1>
             <p className="text-sm text-zenith-neutral-600">
-              {branchAtms[0]?.location.branchName || `Branch: ${branchId}`}
+              {branchAtms[0]?.location.branchName || `Branch: ${decodedBranchId}`}
             </p>
           </div>
 
-          {/* ATM List */}
+          {/* Active Tickets Only */}
           <div className="space-y-4">
-            {branchAtms.length === 0 ? (
+            {activeTickets.length === 0 ? (
               <div className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-8 text-center">
                 <p className="text-zenith-neutral-500">
-                  No ATMs found for this branch
+                  No active service requests
+                </p>
+                <p className="text-sm text-zenith-neutral-400 mt-2">
+                  Active tickets will appear here when engineers are assigned
                 </p>
               </div>
             ) : (
-              branchAtms.map((atm) => {
-                const atmTickets = useTicketStore.getState().getByAtmId(atm.id);
-                const activeTicket = atmTickets.find(
-                  (t) => t.status !== "RESOLVED" && t.status !== "CLOSED"
-                );
+              activeTickets.map((ticket) => {
+                const ticketAtm = branchAtms.find((a) => a.id === ticket.atmId);
+                const isArrived = ticket.geoValidation?.validatedAt;
+                const isVerified = ticket.status === "IN_PROGRESS" || ticket.status === "RESOLVED";
+                const hasProof = !!ticket.resolution?.proofPhotoUrl;
+                const branchConfirmed = ticket.status === "RESOLVED";
 
                 return (
                   <motion.div
-                    key={atm.id}
+                    key={ticket.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-6 hover:shadow-xl transition-shadow cursor-pointer"
-                    onClick={() => activeTicket && router.push(`/branch/${branchId}/ticket/${activeTicket.id}`)}
+                    onClick={() => router.push(`/branch/${encodeURIComponent(branchId)}/ticket/${ticket.id}`)}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg text-zenith-neutral-900 mb-1">
-                          {atm.id}
+                          Ticket #{ticket.id}
                         </h3>
                         <p className="text-sm text-zenith-neutral-600 flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {atm.location.address}
+                          {ticketAtm?.location.address || "ATM Location"}
+                        </p>
+                        <p className="text-xs text-zenith-neutral-500 mt-1">
+                          {ticket.issueType.replace("_", " ")} - {ticket.severity}
                         </p>
                       </div>
                       <span
-                        className={`text-xs px-3 py-1 rounded-full border font-medium ${getStatusColor(
-                          atm.status
-                        )}`}
+                        className={`text-xs px-3 py-1 rounded-full border font-medium ${
+                          ticket.severity === "CRITICAL"
+                            ? "bg-red-100 text-red-700 border-red-200"
+                            : ticket.severity === "HIGH"
+                            ? "bg-orange-100 text-orange-700 border-orange-200"
+                            : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                        }`}
                       >
-                        {atm.status}
+                        {ticket.severity}
                       </span>
                     </div>
 
-                    {activeTicket && (
-                      <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-yellow-600" />
-                            <p className="text-sm text-yellow-700 font-medium">
-                              Active Service: Ticket #{activeTicket.id}
+                    <div className="mt-4 p-3 bg-zenith-accent-50 rounded-lg border border-zenith-accent-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-zenith-accent-600" />
+                          <div>
+                            <p className="text-sm text-zenith-accent-700 font-medium">
+                              {!isArrived
+                                ? "Engineer is on the way"
+                                : !isVerified
+                                ? "Engineer arrived - Awaiting verification"
+                                : hasProof && !branchConfirmed
+                                ? "Work completed - Awaiting your confirmation"
+                                : "Service in progress"}
                             </p>
+                            {!isArrived && (
+                              <p className="text-xs text-zenith-accent-600 mt-1">
+                                Estimated arrival: ~15 minutes
+                              </p>
+                            )}
                           </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/branch/${branchId}/ticket/${activeTicket.id}`);
-                            }}
-                            className="text-xs px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
-                          >
-                            View Details
-                          </button>
                         </div>
-                      </div>
-                    )}
-
-                    <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-zenith-neutral-500 text-xs mb-1">
-                          Cash Level
-                        </p>
-                        <p className="font-semibold text-zenith-neutral-900">
-                          {atm.cashLevel
-                            ? (
-                                (atm.cashLevel.currentAmount /
-                                  atm.cashLevel.totalCapacity) *
-                                100
-                              ).toFixed(0)
-                            : "N/A"}
-                          %
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-zenith-neutral-500 text-xs mb-1">
-                          Network
-                        </p>
-                        <p className="font-semibold text-zenith-neutral-900">
-                          {atm.networkStatus}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-zenith-neutral-500 text-xs mb-1">
-                          Health
-                        </p>
-                        <p className="font-semibold text-zenith-neutral-900">
-                          {atm.predictiveScore?.failureRisk
-                            ? atm.predictiveScore.failureRisk < 0.3
-                              ? "Good"
-                              : atm.predictiveScore.failureRisk < 0.6
-                              ? "Fair"
-                              : "Poor"
-                            : "N/A"}
-                        </p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/branch/${encodeURIComponent(branchId)}/ticket/${ticket.id}`);
+                          }}
+                          className="text-xs px-4 py-2 bg-zenith-accent-600 text-white rounded hover:bg-zenith-accent-700 font-medium"
+                        >
+                          View Details
+                        </button>
                       </div>
                     </div>
                   </motion.div>

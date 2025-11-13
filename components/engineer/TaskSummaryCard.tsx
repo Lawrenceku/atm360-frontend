@@ -177,7 +177,7 @@ function InfoRow({
   return (
     <motion.div className="flex items-start gap-3" variants={itemVariants}>
       <Icon
-        className="text-blue-600 mt-0.5 flex-shrink-0"
+        className="text-zenith-accent-600 mt-0.5 flex-shrink-0"
         size={18}
         aria-hidden="true"
       />

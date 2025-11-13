@@ -52,34 +52,34 @@ export default function VerificationPanel({ code, onVerified }: VerificationPane
         transition={{ duration: 0.4 }}
       >
         {/* Title with loading spinner */}
-        <h3 className="text-2xl font-semibold text-gray-700 flex items-center justify-center gap-2">
+        <h3 className="text-2xl font-semibold text-zenith-neutral-900 flex items-center justify-center gap-2">
           <Loader className="animate-spin text-zenith-accent-600 w-8 h-8" />
           <span>Awaiting Verification</span>
         </h3>
 
         {/* Verification code display */}
-        <p className="text-gray-500 text-sm">Your verification code is:</p>
-        <p className="text-3xl font-mono font-bold text-zenith-accent-700">
+        <p className="text-zenith-neutral-600 text-sm">Your verification code is:</p>
+        <p className="text-4xl font-mono font-bold text-zenith-accent-600 tracking-widest">
           {code}
         </p>
 
         {/* Status text with animation */}
         <motion.div
-          className="text-gray-400 text-lg bg-green-100 rounded-full px-6 py-3 inline-flex items-center space-x-2 animate-pulse"
+          className="text-zenith-accent-600 text-base bg-zenith-accent-50 rounded-full px-6 py-3 inline-flex items-center space-x-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
           {/* Tiny pulsing dot */}
           <motion.div
-            className="w-2.5 h-2.5 animate-pulse rounded-full bg-green-500"
-            animate={{ scale: [1, 1.5, 1] }}
+            className="w-2.5 h-2.5 rounded-full bg-zenith-accent-500"
+            animate={{ scale: [1, 1.5, 1], opacity: [1, 0.7, 1] }}
             transition={{
-              duration: 1,
+              duration: 1.5,
               repeat: Infinity,
               repeatType: "reverse",
             }}
           />
-          <span>{statusText}</span>
+          <span className="font-medium">{statusText}</span>
         </motion.div>
 
         {/* Checkmark once the verification is done */}
@@ -97,9 +97,9 @@ export default function VerificationPanel({ code, onVerified }: VerificationPane
         )}
 
         {!isVerified && !isVerifying && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-700">
-              Share this code with branch staff. They will confirm it matches their code.
+          <div className="mt-4 p-3 bg-zenith-accent-50 rounded-lg border border-zenith-accent-200">
+            <p className="text-sm text-zenith-accent-700">
+              Share this code with branch staff. They will confirm it matches their system.
             </p>
           </div>
         )}

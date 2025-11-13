@@ -41,7 +41,7 @@ export default function UploadProof({ onSuccess }: UploadProofProps) {
         type="button"
         onClick={handleClick}
         disabled={uploading}
-        className="w-full sm:w-auto px-4 py-2 rounded bg-[#004C97] text-white font-semibold shadow hover:bg-[#003366] transition disabled:opacity-60"
+        className="w-full sm:w-auto px-6 py-3 rounded-lg bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white font-semibold shadow-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all disabled:opacity-60"
         aria-label="Upload proof photo"
       >
         {uploading ? "Uploading..." : "Upload Proof Photo"}

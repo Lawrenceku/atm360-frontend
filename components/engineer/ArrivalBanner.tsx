@@ -12,7 +12,9 @@ export default function ArrivalBanner({
   return (
     <motion.div
       className={`p-4 rounded-xl text-center font-medium shadow-lg w-full max-w-md mx-auto ${
-        arrived ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+        arrived 
+          ? "bg-green-100 text-green-700 border border-green-200" 
+          : "bg-zenith-accent-50 text-zenith-accent-700 border border-zenith-accent-200"
       }`}
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
