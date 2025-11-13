@@ -17,20 +17,19 @@ const Marker = dynamic(
   () => import("react-leaflet").then((mod) => mod.Marker),
   { ssr: false }
 );
-// Import useMap normally - it's a hook that must be used inside MapContainer
-import { useMap } from "react-leaflet";
+const Polyline = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Polyline),
+  { ssr: false }
+);
 
-// Lazy load leaflet CSS
+// Lazy load leaflet CSS only
 if (typeof window !== "undefined") {
   import("leaflet/dist/leaflet.css");
-  import("leaflet-routing-machine");
-  import("leaflet-routing-machine/dist/leaflet-routing-machine.css");
 }
 
 let L: any;
 if (typeof window !== "undefined") {
   L = require("leaflet");
-  require("leaflet-routing-machine");
 }
 
 // Fix for default marker icons (only on client)
@@ -43,76 +42,12 @@ if (typeof window !== "undefined" && L) {
   });
 }
 
-let osrmRouter: any;
-if (typeof window !== "undefined" && L?.Routing) {
-  osrmRouter = L.Routing.osrmv1({
-    serviceUrl: "https://router.project-osrm.org/route/v1",
-    profile: "driving",
-  });
-}
-
 interface ArrivalMapProps {
   userLocation: { lat: number; lng: number } | null;
   atmLocation: { lat: number; lng: number };
   onDistanceUpdate?: (distance: number) => void;
   onArrival?: () => void;
-}
-
-function RoutingControl({
-  start,
-  end,
-}: {
-  start: [number, number];
-  end: [number, number];
-}) {
-  const map = useMap();
-  const routingRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !L?.Routing || !osrmRouter || !map) {
-      return;
-    }
-
-    if (routingRef.current) {
-      map.removeControl(routingRef.current);
-      routingRef.current = null;
-    }
-
-    try {
-      const control = L.Routing.control({
-        waypoints: [L.latLng(start[0], start[1]), L.latLng(end[0], end[1])],
-        router: osrmRouter,
-        lineOptions: {
-          styles: [{ color: "#0284c7", weight: 6, opacity: 0.9 }],
-          extendToWaypoints: false,
-          missingRouteTolerance: 0.1,
-        },
-        addWaypoints: false,
-        fitSelectedRoutes: true,
-        showAlternatives: false,
-        createMarker: function () {
-          return null;
-        } as any,
-      }).addTo(map);
-
-      routingRef.current = control;
-    } catch (error) {
-      console.error("Routing error:", error);
-    }
-
-    return () => {
-      if (routingRef.current && map) {
-        try {
-          map.removeControl(routingRef.current);
-        } catch (e) {
-          // Ignore cleanup errors
-        }
-        routingRef.current = null;
-      }
-    };
-  }, [map, start, end]);
-
-  return null;
+  disableTracking?: boolean;
 }
 
 export default function ArrivalMap({
@@ -120,6 +55,7 @@ export default function ArrivalMap({
   atmLocation,
   onDistanceUpdate,
   onArrival,
+  disableTracking = false,
 }: ArrivalMapProps) {
   const [distance, setDistance] = useState<number | null>(null);
   const [eta, setEta] = useState<string | null>(null);
@@ -146,16 +82,18 @@ export default function ArrivalMap({
     const timeHours = dist / 1000 / speedKmh;
     const timeMinutes = Math.round(timeHours * 60);
     setEta(timeMinutes > 0 ? `${timeMinutes} min` : "< 1 min");
+  }, [userLocation, atmLocation, onDistanceUpdate]);
 
-    // Don't auto-trigger arrival - user must explicitly click "Mark as Arrived"
-    // In production, this would be enabled for automatic detection
-    // if (dist <= 50 && onArrival) {
-    //   onArrival();
-    // }
-  }, [userLocation, atmLocation, onDistanceUpdate, onArrival]);
-
-  // Watch position for real-time updates
+  // Watch position for real-time updates (disabled in simulation mode)
   useEffect(() => {
+    if (disableTracking) {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      return;
+    }
+
     if (!navigator.geolocation) return;
 
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -195,9 +133,10 @@ export default function ArrivalMap({
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
       }
     };
-  }, [atmLocation, onDistanceUpdate, onArrival]);
+  }, [atmLocation, onDistanceUpdate, onArrival, disableTracking]);
 
   if (!mounted || typeof window === "undefined") {
     return (
@@ -210,6 +149,14 @@ export default function ArrivalMap({
   const center: [number, number] = userLocation
     ? [userLocation.lat, userLocation.lng]
     : [atmLocation.lat, atmLocation.lng];
+
+  // Simple straight line between points
+  const routeLine: [number, number][] = userLocation
+    ? [
+        [userLocation.lat, userLocation.lng],
+        [atmLocation.lat, atmLocation.lng],
+      ]
+    : [];
 
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden border border-zenith-neutral-200 relative">
@@ -226,23 +173,22 @@ export default function ArrivalMap({
 
         {/* User Location Marker */}
         {userLocation && L && (
-          <Marker position={[userLocation.lat, userLocation.lng]}>
-            {L.Popup && <L.Popup>Your Location</L.Popup>}
-          </Marker>
+          <Marker position={[userLocation.lat, userLocation.lng]} />
         )}
 
         {/* ATM Location Marker */}
-        {L && (
-          <Marker position={[atmLocation.lat, atmLocation.lng]}>
-            {L.Popup && <L.Popup>ATM Destination</L.Popup>}
-          </Marker>
-        )}
+        {L && <Marker position={[atmLocation.lat, atmLocation.lng]} />}
 
-        {/* Route */}
-        {userLocation && (
-          <RoutingControl
-            start={[userLocation.lat, userLocation.lng]}
-            end={[atmLocation.lat, atmLocation.lng]}
+        {/* Simple straight line route */}
+        {routeLine.length > 0 && (
+          <Polyline
+            positions={routeLine}
+            pathOptions={{
+              color: "#0284c7",
+              weight: 4,
+              opacity: 0.7,
+              dashArray: "10, 10",
+            }}
           />
         )}
       </MapContainer>
@@ -258,9 +204,11 @@ export default function ArrivalMap({
               ETA: {eta}
             </div>
           )}
+          <div className="text-xs text-zenith-neutral-500 mt-1">
+            Direct path shown
+          </div>
         </div>
       )}
     </div>
   );
 }
-
