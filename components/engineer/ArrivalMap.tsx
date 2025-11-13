@@ -147,10 +147,11 @@ export default function ArrivalMap({
     const timeMinutes = Math.round(timeHours * 60);
     setEta(timeMinutes > 0 ? `${timeMinutes} min` : "< 1 min");
 
-    // Check if arrived (within 50 meters)
-    if (dist <= 50 && onArrival) {
-      onArrival();
-    }
+    // Don't auto-trigger arrival - user must explicitly click "Mark as Arrived"
+    // In production, this would be enabled for automatic detection
+    // if (dist <= 50 && onArrival) {
+    //   onArrival();
+    // }
   }, [userLocation, atmLocation, onDistanceUpdate, onArrival]);
 
   // Watch position for real-time updates

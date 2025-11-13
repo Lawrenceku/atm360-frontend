@@ -21,9 +21,22 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function BranchTicketPage() {
   const params = useParams();
+  // branchId from params is already decoded by Next.js
   const branchId = params?.branchId as string;
   const ticketId = params?.ticketId as string;
   const router = useRouter();
+  
+  // Helper to get properly encoded branchId for URLs (only encode once)
+  const getEncodedBranchId = () => {
+    try {
+      // If already encoded, decode first then re-encode
+      const decoded = decodeURIComponent(branchId);
+      return encodeURIComponent(decoded);
+    } catch {
+      // If not encoded, just encode it
+      return encodeURIComponent(branchId);
+    }
+  };
   
   const ticket = useTicketStore(selectTicketById(ticketId));
   const atmSelector = ticket?.atmId ? selectGetById(ticket.atmId) : (() => null);
@@ -144,7 +157,7 @@ export default function BranchTicketPage() {
         <div className="flex-1 p-4 max-w-4xl mx-auto w-full">
           <div className="mb-6">
             <button
-              onClick={() => router.push(`/branch/${encodeURIComponent(branchId)}`)}
+              onClick={() => router.push(`/branch/${getEncodedBranchId()}`)}
               className="text-zenith-accent-600 hover:text-zenith-accent-700 mb-4"
             >
               ← Back to Dashboard

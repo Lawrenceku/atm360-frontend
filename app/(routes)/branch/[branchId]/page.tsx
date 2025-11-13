@@ -17,9 +17,22 @@ import BranchSidebar from "@/components/branch/BranchSidebar";
 
 export default function BranchPage() {
   const params = useParams();
+  // branchId from params is already decoded by Next.js
   const branchId = params?.branchId as string;
   const router = useRouter();
   const atms = useAtmStore(selectAtms) ?? [];
+  
+  // Helper to get properly encoded branchId for URLs (only encode once)
+  const getEncodedBranchId = () => {
+    try {
+      // If already encoded, decode first then re-encode
+      const decoded = decodeURIComponent(branchId);
+      return encodeURIComponent(decoded);
+    } catch {
+      // If not encoded, just encode it
+      return encodeURIComponent(branchId);
+    }
+  };
 
   // Decode branchId (handles spaces and special characters)
   const decodedBranchId = useMemo(() => {
@@ -118,7 +131,7 @@ export default function BranchPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-6 hover:shadow-xl transition-shadow cursor-pointer"
-                    onClick={() => router.push(`/branch/${encodeURIComponent(branchId)}/ticket/${ticket.id}`)}
+                    onClick={() => router.push(`/branch/${getEncodedBranchId()}/ticket/${ticket.id}`)}
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
@@ -170,7 +183,7 @@ export default function BranchPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            router.push(`/branch/${encodeURIComponent(branchId)}/ticket/${ticket.id}`);
+                            router.push(`/branch/${getEncodedBranchId()}/ticket/${ticket.id}`);
                           }}
                           className="text-xs px-4 py-2 bg-zenith-accent-600 text-white rounded hover:bg-zenith-accent-700 font-medium"
                         >

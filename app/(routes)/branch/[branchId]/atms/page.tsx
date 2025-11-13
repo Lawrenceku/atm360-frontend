@@ -10,9 +10,22 @@ import BranchSidebar from "@/components/branch/BranchSidebar";
 
 export default function BranchAtmsPage() {
   const params = useParams();
+  // branchId from params is already decoded by Next.js
   const branchId = params?.branchId as string;
   const router = useRouter();
   const atms = useAtmStore(selectAtms) ?? [];
+  
+  // Helper to get properly encoded branchId for URLs (only encode once)
+  const getEncodedBranchId = () => {
+    try {
+      // If already encoded, decode first then re-encode
+      const decoded = decodeURIComponent(branchId);
+      return encodeURIComponent(decoded);
+    } catch {
+      // If not encoded, just encode it
+      return encodeURIComponent(branchId);
+    }
+  };
 
   // Decode branchId (handles spaces and special characters)
   const decodedBranchId = useMemo(() => {
@@ -122,7 +135,7 @@ export default function BranchAtmsPage() {
                             </p>
                           </div>
                           <button
-                            onClick={() => router.push(`/branch/${encodeURIComponent(branchId)}/ticket/${activeTicket.id}`)}
+                            onClick={() => router.push(`/branch/${getEncodedBranchId()}/ticket/${activeTicket.id}`)}
                             className="text-xs px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
                           >
                             View Details

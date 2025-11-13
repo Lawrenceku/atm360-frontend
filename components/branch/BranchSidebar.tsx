@@ -18,16 +18,29 @@ export default function BranchSidebar({ branchId }: BranchSidebarProps) {
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const isMobile = useIsMobile();
+  
+  // Helper to get properly encoded branchId for URLs (only encode once)
+  const getEncodedBranchId = () => {
+    try {
+      // If already encoded, decode first then re-encode
+      const decoded = decodeURIComponent(branchId);
+      return encodeURIComponent(decoded);
+    } catch {
+      // If not encoded, just encode it
+      return encodeURIComponent(branchId);
+    }
+  };
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
+  const encodedBranchId = getEncodedBranchId();
   const navItems = [
-    { href: `/branch/${encodeURIComponent(branchId)}`, label: "Dashboard", icon: Activity },
-    { href: `/branch/${encodeURIComponent(branchId)}/atms`, label: "ATMs", icon: MapPin },
-    { href: `/branch/${encodeURIComponent(branchId)}/complaints`, label: "Complaints", icon: MessageSquare },
+    { href: `/branch/${encodedBranchId}`, label: "Dashboard", icon: Activity },
+    { href: `/branch/${encodedBranchId}/atms`, label: "ATMs", icon: MapPin },
+    { href: `/branch/${encodedBranchId}/complaints`, label: "Complaints", icon: MessageSquare },
   ];
 
   return (
