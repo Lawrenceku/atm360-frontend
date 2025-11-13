@@ -21,7 +21,7 @@ export function TransparencyHeader({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-b">
-      <h2 className="text-xl font-semibold">Transparency Dashboard</h2>
+      <h2 className="text-xl font-semibold">Audits</h2>
 
       <div className="flex flex-wrap gap-2 items-center">
         <Select

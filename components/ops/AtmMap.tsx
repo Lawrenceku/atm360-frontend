@@ -1,48 +1,57 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import useAtmStore, { selectAtms, selectLoading } from "@/lib/store/atmStore";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapContainer,TileLayer,Marker,Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+
+const createColoredIcon = (color: string) => {
+  const svgIcon = `
+    <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z" fill="${color}"/>
+      <circle cx="12.5" cy="12.5" r="6" fill="white"/>
+    </svg>
+  `;
+
+  const svgShadow = `
+    <svg width="41" height="41" viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="20.5" cy="37" rx="10" ry="4" fill="rgba(0,0,0,0.3)"/>
+    </svg>
+  `;
+
+  return L.icon({
+    iconUrl: `data:image/svg+xml;base64,${btoa(svgIcon)}`,
+    shadowUrl: `data:image/svg+xml;base64,${btoa(svgShadow)}`,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+};
+
+const iconOnline      = createColoredIcon("#22c55e"); // Green
+const iconMaintenance = createColoredIcon("#f59e0b"); // Yellow/Orange
 
 
-// Define colored icons
-const iconDefault = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
+const iconOffline = L.divIcon({
+  className: "custom-pulse-marker",
+  html: `
+    <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12.5 0C5.596 0 0 5.596 0 12.5c0 9.375 12.5 28.5 12.5 28.5S25 21.875 25 12.5C25 5.596 19.404 0 12.5 0z"
+            fill="#ef4444"/>
+      <circle cx="12.5" cy="12.5" r="6" fill="white"/>
+    </svg>
+  `,
+  iconSize:     [25, 41],
+  iconAnchor:   [12, 41],
+  popupAnchor:  [1, -34],
+  shadowUrl:    `data:image/svg+xml;base64,${btoa(`
+    <svg width="41" height="41" viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="20.5" cy="37" rx="10" ry="4" fill="rgba(0,0,0,0.3)"/>
+    </svg>`)}`,
+  shadowSize:   [41, 41],
 });
-
-const iconMaintenance = L.icon({
-  ...iconDefault.options,
-  className: "maintenance-marker",
-});
-
-const iconFaulty = L.icon({
-  ...iconDefault.options,
-  className: "faulty-marker",
-});
-
-// Add CSS filters for colors
-<style jsx global>{`
-  .faulty-marker {
-    filter: hue-rotate(0deg) saturate(10) brightness(0.9); /* Red tint */
-  }
-  .maintenance-marker {
-    filter: hue-rotate(50deg) saturate(3) brightness(1.1); /* Yellow tint */
-  }
-  .leaflet-container {
-    height: 100%;
-    width: 100%;
-  }
-`}</style>
 
 
 function MapUpdater({ atms }: { atms: ATM[] }) {
@@ -69,23 +78,17 @@ function MapUpdater({ atms }: { atms: ATM[] }) {
   return MapUpdaterComponent ? <MapUpdaterComponent /> : null;
 }
 
+
 export function AtmMap() {
-  // Read ATMs from centralized Zustand store
   const atms = useAtmStore(selectAtms);
   const loading = useAtmStore(selectLoading);
 
-  // keep map bounds in sync when ATMs change by relying on MapUpdater below
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "operational":
-        return "text-zenith-success";
-      case "faulty":
-        return "text-zenith-error";
-      case "maintenance":
-        return "text-zenith-warning";
-      default:
-        return "text-zenith-neutral-500";
+      case "ONLINE":      return "text-green-600";
+      case "OFFLINE":     return "text-red-600";
+      case "MAINTENANCE": return "text-yellow-600";
+      default:            return "text-gray-500";
     }
   };
 
@@ -94,41 +97,38 @@ export function AtmMap() {
   return (
     <div className="w-full h-full relative">
       <style jsx global>{`
-        .faulty-marker {
-          filter: hue-rotate(0deg) saturate(2);
+        .leaflet-container { height: 100%; width: 100%; }
+
+        @keyframes pulse-red {
+          0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+          70%  { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
+          100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
         }
-        .leaflet-container {
-          height: 100%;
-          width: 100%;
-        }
+        .custom-pulse-marker svg { animation: pulse-red 1.5s infinite; }
       `}</style>
-      <MapContainer
-        center={[6.43067, 3.43505]}
-        zoom={12}
-        style={{ height: "100%", width: "100%" }}
-        scrollWheelZoom={true}
-      >
+
+      <MapContainer center={[6.43067, 3.43505]} zoom={12} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
         <TileLayer
           url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors, HOT"
         />
 
         <MapUpdater atms={atms} />
-        {atms.map((atm: ATM) => (
-        <Marker
-          key={atm.id}
-          position={[atm.location.coordinates.lat, atm.location.coordinates.lng]}
-          icon={
-            atm.status === "OFFLINE" 
-              ? iconFaulty
-              : atm.status === "MAINTENANCE"
-              ? iconMaintenance
-              : iconDefault
-          }
-        >
 
+        {atms.map((atm: ATM) => (
+          <Marker
+            key={atm.id}
+            position={[atm.location.coordinates.lat, atm.location.coordinates.lng]}
+            icon={
+              atm.status === "OFFLINE"
+                ? iconOffline
+                : atm.status === "MAINTENANCE"
+                  ? iconMaintenance
+                  : iconOnline
+            }
+          >
             <Popup>
-              <div className="p-2">
+               <div className="p-2">
                 <h3 className="font-semibold text-zenith-neutral-900 mb-1">
                   {atm.location.branchName}
                 </h3>

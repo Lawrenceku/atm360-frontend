@@ -43,7 +43,7 @@ export default function Sidebar() {
     { href: "/ops/activity", label: "Activity", icon: Activity },
     { href: "/ops/alerts", label: "Alerts", icon: AlertIcon },
     { href: "/ops/reports", label: "Reports", icon: FileText },
-    { href: "/ops/transparency", label: "Transparency Logs", icon: Eye },
+    { href: "/ops/transparency", label: "Audit Logs", icon: Eye },
     { href: "/ops/connect-iad", label: "Connect IAD", icon: Banknote },
   ];
 

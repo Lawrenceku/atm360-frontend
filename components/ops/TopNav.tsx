@@ -29,7 +29,7 @@ export function TopNav() {
       "/ops/guide": "Operations Guide",
       "/ops/settings": "Settings",
       "/ops/connect-iad": "Connect IAD",
-      "/ops/transparency": "Transparency Logs",
+      "/ops/transparency": "Audit Logs",
     };
     return map[pathname] ?? "Welcome";
   }, [pathname]);
