@@ -7,6 +7,7 @@ import { useEngineerStore } from "@/lib/store/engineerStore";
 import { useTicketStore } from "@/lib/store/ticketStore";
 import { useTransparencyStore } from "@/lib/store/transparencyStore";
 import { toast } from "sonner";
+import formatText from "@/lib/utils/formatText";
 
 const aiSteps = [
   {
@@ -66,14 +67,17 @@ export default function AIActionPanel({
 
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (panelRef.current) {
-      panelRef.current.scrollTop = panelRef.current.scrollHeight;
-    }
+    setTimeout(() => {
+      if (panelRef.current) {
+        panelRef.current.scrollTop = panelRef.current.scrollHeight;
+      }
+    }, 400);
   }, [visibleSteps]);
 
   const handleDispatch = async (alert: Alert) => {
     const available = engineers.filter((e) => e.status === "available");
-    const selected = available[Math.floor(Math.random() * available.length)];
+    const selected =
+      available[Math.floor(Math.random() * available.length)] ?? engineers[0];
     if (!selected) return toast.error("No available engineers to dispatch.");
 
     const ticket = await createTicket({
@@ -94,6 +98,12 @@ export default function AIActionPanel({
       user: { role: "ops" },
       meta: { engineerId: selected.id, ticketId: ticket.id },
     });
+    toast.success(
+      `Assigned Engineer ${formatText(selected.name, "capitalize")}${formatText(
+        selected.surname,
+        "capitalize"
+      )} to ${ticket.id}`
+    );
   };
 
   const simulateAIActions = async (alert: Alert) => {
