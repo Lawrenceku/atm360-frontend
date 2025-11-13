@@ -9,7 +9,7 @@ import TopicList from "@/components/ops/TopicList";
 import Leaderboard from "@/components/ops/Leaderboard";
 import { AtmNetworkUptime } from "@/components/ops/kpis/AtmNetworkUptime";
 
-import { MeanTimeToRepair } from "@/components/ops/kpis/MeanTimeToRepair";
+import { MeanTimeToRepair } from "@/components/ops/kpis/MeanTImeToRepair";
 import { AtmDowntimeByRegion } from "@/components/ops/kpis/AtmDowntimeByRegion";
 import { IncidentBreakdown } from "@/components/ops/kpis/IncidentBreakdown";
 import { FraudDetectionRate } from "@/components/ops/kpis/FraudDetectionRate";
