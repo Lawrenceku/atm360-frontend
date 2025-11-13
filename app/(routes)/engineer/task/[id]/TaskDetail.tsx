@@ -78,17 +78,24 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
   }, [ticket, verificationCode]);
 
   // Update active step based on progress
-  useEffect(() => {
-    let step = 0;
-    if (!arrived) step = 0;
-    else if (arrived && !verified) step = 1;
-    else if (verified && !repairStarted) step = 2;
-    else if (repairStarted && !ticket?.resolution?.proofPhotoUrl) step = 2;
-    else if (ticket?.resolution?.proofPhotoUrl && ticket?.status !== "RESOLVED") step = 3;
-    else if (ticket?.status === "RESOLVED") step = 4;
+useEffect(() => {
+  // RESOLVED ticket → always the final step
+  if (ticket?.status === "RESOLVED") {
+    setActiveStep(4);
+    return;
+  }
 
-    setActiveStep(step);
-  }, [arrived, verified, repairStarted, ticket]);
+  let step = 0;
+  if (!arrived) step = 0;
+  else if (arrived && !verified) step = 1;
+  else if (verified && !repairStarted) step = 2;
+  else if (repairStarted && !ticket?.resolution?.proofPhotoUrl) step = 2;
+  // else if (ticket?.resolution?.proofPhotoUrl && ticket?.status !== "RESOLVED") step = 3;
+  // any other case (proof uploaded but not yet RESOLVED) → step 3
+  else step = 3;
+
+  setActiveStep(step);
+}, [arrived, verified, repairStarted, ticket]);
 
   // Restore arrival state from ticket data
   useEffect(() => {
@@ -111,6 +118,19 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
       );
     }
   }, [ticket?.geoValidation, arrived, atm]);
+
+  useEffect(() => {
+  if (ticket?.status === "RESOLVED") {
+    // Ensure every flag is true so the step-logic can only land on step 4
+    setArrived(true);
+    setVerified(true);
+    setRepairStarted(true);
+    setBranchConfirmed(true);
+    setChecklist((prev) =>
+      prev.map((c) => ({ ...c, done: true }))
+    );
+  }
+}, [ticket?.status]);
 
   // Load ticket and ATM data
   useEffect(() => {
