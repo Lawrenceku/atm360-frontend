@@ -558,7 +558,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
               >
                 <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-zenith-neutral-900 mb-2">
-                  Task Completed! 🎉
+                  Task Completed! 
                 </h2>
                 <p className="text-zenith-neutral-600 mb-6">
                   Great work! The task has been successfully completed.
