@@ -48,7 +48,7 @@ export default function Sidebar() {
   ];
 
   const supportItems = [
-    { href: "/ops/settings", label: "Settings", icon: Settings },
+    // { href: "/ops/settings", label: "Settings", icon: Settings },
     {
       href: "/ops/guide",
       label: "Guide",
@@ -60,7 +60,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* ☰ Mobile hamburger toggle */}
       {isMobile && (
         <button
           onClick={() => setIsOpen(true)}

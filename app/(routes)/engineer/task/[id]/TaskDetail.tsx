@@ -13,13 +13,11 @@ import useTicketStore, {
 } from "@/lib/store/ticketStore";
 
 import ArrivalBanner from "@/components/engineer/ArrivalBanner";
+import ArrivalMap from "@/components/engineer/ArrivalMap";
 import VerificationPanel from "@/components/engineer/VerificationPanel";
 import TaskSummaryCard from "@/components/engineer/TaskSummaryCard";
 import Checklist from "@/components/engineer/Checklist";
-
 import SupportPanel from "@/components/engineer/SupportPanel";
-
-// import TaskMapCard from "@/components/engineer/TaskMapCard";
 import useFeedback from "@/lib/utils/useFeedback";
 import { toast } from "sonner";
 import UploadProof from "../[id]/UploadProof";
@@ -29,7 +27,7 @@ import { useTransparencyStore } from "@/lib/store/transparencyStore";
 import { useAuthStore } from "@/lib/store/authStore";
 import MultiStepProgress from "@/components/engineer/MultiStepProgress";
 import sendWhatsAppMessage from "@/lib/utils/sendWhatsappMessage";
-import { send } from "process";
+import { CheckCircle, Clock, MapPin } from "lucide-react";
 interface TaskDetailProps {
   ticketId: string;
 }
@@ -47,6 +45,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [arrived, setArrived] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [repairStarted, setRepairStarted] = useState(false);
+  const [repairStartTime, setRepairStartTime] = useState<Date | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const { vibrate, playArrivalSound } = useFeedback();
   const [activeStep, setActiveStep] = useState(0);
@@ -54,14 +54,26 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
     lat: number;
     lng: number;
   } | null>(null);
-  const [otpOpen, setOtpOpen] = useState(false);
-  const [otpId, setOtpId] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState<string>("");
+  const [branchConfirmed, setBranchConfirmed] = useState(false);
+
+  // Generate verification code when task is loaded (deterministic based on ticket ID)
+  useEffect(() => {
+    if (ticket && !verificationCode) {
+      // Generate a deterministic 6-digit code based on ticket ID
+      // This ensures both engineer and branch generate the same code
+      const ticketNum = parseInt(ticket.id.replace("TKT-", "")) || 0;
+      const code = String(Math.floor(100000 + (ticketNum % 900000))).padStart(6, "0");
+      setVerificationCode(code);
+    }
+  }, [ticket, verificationCode]);
 
   useEffect(() => {
     let step = 0;
     if (!arrived) step = 0;
     else if (arrived && !verified) step = 1;
-    else if (verified && !ticket?.resolution?.proofPhotoUrl) step = 2;
+    else if (verified && !repairStarted) step = 2;
+    else if (repairStarted && !ticket?.resolution?.proofPhotoUrl) step = 2; // Still repair
     else if (
       ticket?.resolution?.proofPhotoUrl &&
       !(ticket?.status === "RESOLVED")
@@ -70,7 +82,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
 
     if (ticket?.status === "RESOLVED") step = 4;
     setActiveStep(step);
-  }, [arrived, verified, ticket]);
+  }, [arrived, verified, repairStarted, ticket]);
   const [checklist, setChecklist] = useState([
     { id: "validate", label: "Arrival at ATM location", done: true },
     { id: "verify", label: "On-site Verification", done: true },
@@ -124,102 +136,96 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
     return R * c;
   }
 
+  // Get user location on mount
   useEffect(() => {
-    if (!atm?.location.coordinates) return;
-
-    // Example starting point (simulate "far away" user)
-    let userLat = atm.location.coordinates.lat - 0.001;
-    let userLng = atm.location.coordinates.lng - 0.001;
-
-    let steps = 10; // number of steps to reach ATM
-    const latStep = (atm.location.coordinates.lat - userLat) / steps;
-    const lngStep = (atm.location.coordinates.lng - userLng) / steps;
-
-    const intervalId = setInterval(() => {
-      if (steps > 0) {
-        userLat += latStep;
-        userLng += lngStep;
-        setUserLocation({ lat: userLat, lng: userLng });
-        setDistance(
-          distanceBetween(
-            userLat,
-            userLng,
-            atm.location.coordinates.lat,
-            atm.location.coordinates.lng
-          )
-        );
-
-        steps--;
-      } else {
-        clearInterval(intervalId);
-        setArrived(true);
-        (async () => {
-          await sendWhatsAppMessage({
-            to: "+2348085716180",
-            message: `You have arrived at ATM #${atm.id} (location: ${atm.location.branchName}). Please proceed with verification.`,
-          });
-          toast.success("Message sent");
-        })();
-        addLog({
-          type: "user-action",
-          details: `Engineer arrived at ATM #${
-            atm?.id || "unknown"
-          } (distance ≤ 50m)`,
-          severity: "info",
-          user: { role: "engineer", id: user?.id },
+    if (!navigator.geolocation) {
+      // Fallback for demo
+      if (atm?.location.coordinates) {
+        setUserLocation({
+          lat: atm.location.coordinates.lat - 0.01,
+          lng: atm.location.coordinates.lng - 0.01,
         });
       }
-    }, 1000); // move every second
-
-    return () => clearInterval(intervalId);
-  }, [atm, addLog, user?.id]);
-
-  // Simulate verification (HQ confirmation)
-  useEffect(() => {
-    if (arrived && !verified) {
-      sendWhatsAppMessage({
-        to: "+2348085716180",
-        message:
-          "Your verification code is 930912. Please enter this code on-site to complete verification.",
-      });
-      const timer = setTimeout(() => {
-        setVerified(true);
-        addLog({
-          type: "user-action",
-          details: `On-site verification successful for Ticket #${ticket?.id}`,
-          severity: "info",
-          user: { role: "engineer", id: user?.id },
-        });
-        vibrate();
-        sendWhatsAppMessage({
-          to: "+2348085716180",
-          message: `Verification completed for Ticket #${ticket?.id}. You may proceed with repairs.`,
-        });
-        // playVerificationSound();
-        toast.success("Verification successful!");
-      }, 7000);
-      return () => clearTimeout(timer);
+      return;
     }
-  }, [arrived, vibrate, verified, addLog, user?.id, ticket?.id]);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      () => {
+        // Fallback for demo if location denied
+        if (atm?.location.coordinates) {
+          setUserLocation({
+            lat: atm.location.coordinates.lat - 0.01,
+            lng: atm.location.coordinates.lng - 0.01,
+          });
+        }
+      },
+      { enableHighAccuracy: true }
+    );
+  }, [atm]);
+
+  const handleArrived = () => {
+    if (!arrived && atm) {
+      setArrived(true);
+      useTicketStore.getState().updateTicket(ticket!.id, {
+        geoValidation: {
+          engineerLat: userLocation?.lat || 0,
+          engineerLng: userLocation?.lng || 0,
+          validatedAt: new Date().toISOString(),
+        },
+      });
+      addLog({
+        type: "user-action",
+        details: `Engineer arrived at ATM #${atm.id} (distance ≤ 50m)`,
+        severity: "info",
+        user: { role: "engineer", id: user?.id },
+      });
+      toast.success("Arrival confirmed!");
+    }
+  };
+
+  const handleVerificationComplete = () => {
+    if (!verified) {
+      setVerified(true);
+      setRepairStarted(true);
+      setRepairStartTime(new Date());
+      addLog({
+        type: "user-action",
+        details: `On-site verification successful for Ticket #${ticket?.id}`,
+        severity: "info",
+        user: { role: "engineer", id: user?.id },
+      });
+      vibrate();
+      toast.success("Verification successful! Repair timer started.");
+    }
+  };
 
   const handleProofUpload = async (base64: string) => {
-    if (!ticket) return;
+    if (!ticket || !repairStartTime) return;
     setActionLoading(true);
     try {
+      const timeSpent = Math.floor(
+        (new Date().getTime() - repairStartTime.getTime()) / 60000
+      );
       useTicketStore.getState().updateTicket(ticket.id, {
         resolution: {
           ...(ticket.resolution || {}),
           proofPhotoUrl: base64,
           summary: ticket.resolution?.summary ?? "Proof uploaded",
           resolvedAt: ticket.resolution?.resolvedAt ?? new Date().toISOString(),
-          timeSpentMinutes: ticket.resolution?.timeSpentMinutes ?? 0,
+          timeSpentMinutes: timeSpent,
         },
       });
       localStorage.setItem(`ticket-proof-${ticket.id}`, base64);
       setChecklist((prev) =>
         prev.map((c) => (c.id === "proof" ? { ...c, done: true } : c))
       );
-      toast.success("Proof uploaded");
+      toast.success("Proof uploaded. Waiting for branch confirmation...");
       addLog({
         type: "user-action",
         details: `Proof photo uploaded for Ticket #${ticket.id}`,
@@ -227,10 +233,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
         user: { role: "engineer", id: user?.id },
         meta: { proofLength: base64.length },
       });
-      sendWhatsAppMessage({
-        to: "+2348085716180",
-        message: `Proof of fix uploaded for Ticket #${ticket.id}. Please review and mark the task as complete.`,
-      });
+      
+      // Simulate branch confirmation after a delay
+      setTimeout(() => {
+        setBranchConfirmed(true);
+        toast.success("Branch confirmed work completion!");
+      }, 3000);
     } catch {
       setError("Failed to upload proof.");
       toast.error("Failed to upload proof.");
@@ -245,7 +253,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
     }
   };
   async function handleMarkComplete() {
-    if (!ticket) return;
+    if (!ticket || !repairStartTime) return;
     const proofUrl =
       ticket.resolution?.proofPhotoUrl ??
       localStorage.getItem(`ticket-proof-${ticket.id}`);
@@ -256,16 +264,23 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
         details: `Upload of proof of fix failed for ticket ${ticket.id}`,
         severity: "error",
       });
+      return;
+    }
 
+    if (!branchConfirmed) {
+      toast.error("Please wait for branch confirmation before completing.");
       return;
     }
 
     setActionLoading(true);
     try {
+      const timeSpent = Math.floor(
+        (new Date().getTime() - repairStartTime.getTime()) / 60000
+      );
       await useTicketStore.getState().resolveTicket(ticket.id, {
         summary: "Issue resolved successfully",
         resolvedAt: new Date().toISOString(),
-        timeSpentMinutes: Math.floor(Math.random() * 60) + 20,
+        timeSpentMinutes: timeSpent,
         proofPhotoUrl: proofUrl,
       });
       setChecklist((prev) =>
@@ -273,18 +288,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
       );
       addLog({
         type: "user-action",
-        details: `Engineer marked Ticket #${ticket.id} as complete.`,
+        details: `Engineer marked Ticket #${ticket.id} as complete. Total time: ${timeSpent} minutes`,
         severity: "info",
         user: { role: "engineer", id: user?.id },
       });
-      sendWhatsAppMessage({
-        to: "+2348085716180",
-        message: `Task for Ticket #${ticket.id} has been marked complete. Thank you!`,
-      });
-      toast.success("Task completed — redirecting...");
-      setTimeout(() => {
-        router.push("/engineer");
-      }, 2500);
+      toast.success("Task completed!");
     } catch {
       toast.error("Failed to mark complete.");
       addLog({
@@ -383,9 +391,26 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
                 initial={{ opacity: 0, y: 80, animationDuration: 0.6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -80, animationDuration: 0.8 }}
+                className="w-full"
               >
                 <ArrivalBanner arrived={arrived} distance={distance} />
-                {/* <TaskMapCard atm={atm} userLocation={userLocation} /> */}
+                {atm && userLocation && (
+                  <div className="mt-4">
+                    <ArrivalMap
+                      userLocation={userLocation}
+                      atmLocation={atm.location.coordinates}
+                      onDistanceUpdate={setDistance}
+                      onArrival={handleArrived}
+                    />
+                  </div>
+                )}
+                {/* Temporary Arrived button for demo */}
+                <button
+                  onClick={handleArrived}
+                  className="mt-4 w-full px-6 py-3 bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white rounded-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all font-medium"
+                >
+                  Mark as Arrived
+                </button>
               </motion.div>
             )}
 
@@ -395,42 +420,116 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ ticketId }) => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
+                className="w-full"
               >
-                <VerificationPanel />
+                <VerificationPanel
+                  code={verificationCode}
+                  onVerified={handleVerificationComplete}
+                />
               </motion.div>
             )}
 
-            {verified && (
+            {verified && ticket?.status !== "RESOLVED" && (
               <motion.div
                 key="details"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
+                className="w-full space-y-4"
               >
+                {/* Repair Timer */}
+                {repairStarted && repairStartTime && (
+                  <div className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-4">
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-zenith-accent-600" />
+                      <div>
+                        <p className="text-sm text-zenith-neutral-500">
+                          Repair Time
+                        </p>
+                        <p className="text-lg font-semibold text-zenith-neutral-900">
+                          {Math.floor(
+                            (new Date().getTime() - repairStartTime.getTime()) /
+                              60000
+                          )}{" "}
+                          minutes
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <Checklist checklist={checklist} setChecklist={setChecklist} />
                 <UploadProof onSuccess={handleProofUpload} />
                 {ticket.resolution?.proofPhotoUrl && (
-                  <section className="mx-auto flex flex-col items-center">
-                    <h3 className="text-lg font-semibold">Uploaded Proof</h3>
-                    <div className="mt-2 mx-auto">
+                  <section className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-4">
+                    <h3 className="text-lg font-semibold mb-2">Uploaded Proof</h3>
+                    <div className="mt-2">
                       <Image
                         src={ticket.resolution.proofPhotoUrl}
                         alt="Proof Photo"
                         width={400}
                         height={300}
-                        className="rounded border"
+                        className="rounded border w-full max-w-md"
                       />
                     </div>
+                    {!branchConfirmed && (
+                      <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-sm text-yellow-700">
+                          Waiting for branch confirmation...
+                        </p>
+                      </div>
+                    )}
+                    {branchConfirmed && (
+                      <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200 flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <p className="text-sm text-green-700">
+                          Branch confirmed work completion
+                        </p>
+                      </div>
+                    )}
                   </section>
                 )}
 
-                <button
-                  onClick={handleMarkComplete}
-                  disabled={actionLoading}
-                  className="bg-zenith-accent-600 hover:bg-zenith-accent-500 disabled:opacity-60 mt-4 w-full text-white py-2 rounded transition"
-                >
-                  Mark Task Complete
-                </button>
+                {ticket.resolution?.proofPhotoUrl && branchConfirmed && (
+                  <button
+                    onClick={handleMarkComplete}
+                    disabled={actionLoading}
+                    className="bg-zenith-accent-600 hover:bg-zenith-accent-500 disabled:opacity-60 w-full text-white py-3 rounded-lg transition font-medium"
+                  >
+                    {actionLoading ? "Completing..." : "Mark Task Complete"}
+                  </button>
+                )}
                 <SupportPanel />
+              </motion.div>
+            )}
+
+            {ticket?.status === "RESOLVED" && (
+              <motion.div
+                key="completion"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-8 text-center"
+              >
+                <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-zenith-neutral-900 mb-2">
+                  Task Completed! 🎉
+                </h2>
+                <p className="text-zenith-neutral-600 mb-6">
+                  Great work! The task has been successfully completed.
+                </p>
+                {repairStartTime && ticket.resolution && (
+                  <div className="mb-6 p-4 bg-zenith-accent-50 rounded-lg">
+                    <p className="text-sm text-zenith-neutral-600">
+                      Total repair time: {ticket.resolution.timeSpentMinutes}{" "}
+                      minutes
+                    </p>
+                  </div>
+                )}
+                <button
+                  onClick={() => router.push("/engineer")}
+                  className="px-6 py-3 bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white rounded-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all font-medium"
+                >
+                  Return to Dashboard
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
