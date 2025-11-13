@@ -44,8 +44,6 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import Sidebar from "@/components/ops/Sidebar";
-import { TopNav } from "@/components/ops/TopNav";
 
 // ── Mock Data ─────────────────────────────────────
 const generateLogs = () => {
@@ -243,7 +241,7 @@ export default function ActivityPage() {
           Zeni is analyzing patterns. 3 active alerts require attention.
         </span>
         <a
-          href="/alerts"
+          href="/ops/alerts"
           className="flex items-center gap-1 bg-orange-700/80 p-2 rounded-lg text-orange-100 ml-auto hover:bg-orange-700 transition px-3 py-1 text-sm font-medium"
         >
           View <ArrowUpRight size={20} />
