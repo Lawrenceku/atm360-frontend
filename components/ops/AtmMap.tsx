@@ -7,26 +7,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { MapContainer,TileLayer,Marker,Popup } from "react-leaflet";
 
-// const MapContainer = dynamic(
-//   () => import("react-leaflet").then((mod) => mod.MapContainer),
-//   { ssr: false }
-// );
-// const TileLayer = dynamic(
-//   () => import("react-leaflet").then((mod) => mod.TileLayer),
-//   { ssr: false }
-// );
-// const Marker = dynamic(
-//   () => import("react-leaflet").then((mod) => mod.Marker),
-//   { ssr: false }
-// );
-// const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
-//   ssr: false,
-// });
-// const useMap = dynamic(
-//   () => import('react-leaflet').then((mod) => mod.useMap),
-//   { ssr: false }
-// );
 
+// Define colored icons
 const iconDefault = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
   iconRetinaUrl:
@@ -38,17 +20,30 @@ const iconDefault = L.icon({
   shadowSize: [41, 41],
 });
 
+const iconMaintenance = L.icon({
+  ...iconDefault.options,
+  className: "maintenance-marker",
+});
+
 const iconFaulty = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
+  ...iconDefault.options,
   className: "faulty-marker",
 });
+
+// Add CSS filters for colors
+<style jsx global>{`
+  .faulty-marker {
+    filter: hue-rotate(0deg) saturate(10) brightness(0.9); /* Red tint */
+  }
+  .maintenance-marker {
+    filter: hue-rotate(50deg) saturate(3) brightness(1.1); /* Yellow tint */
+  }
+  .leaflet-container {
+    height: 100%;
+    width: 100%;
+  }
+`}</style>
+
 
 function MapUpdater({ atms }: { atms: ATM[] }) {
   const [MapUpdaterComponent, setMapUpdaterComponent] = useState<React.ComponentType | null>(null);
@@ -120,11 +115,18 @@ export function AtmMap() {
 
         <MapUpdater atms={atms} />
         {atms.map((atm: ATM) => (
-          <Marker
-            key={atm.id}
-            position={[atm.location.coordinates.lat, atm.location.coordinates.lng]}
-            icon={atm.status === "OFFLINE" ? iconFaulty : iconDefault}
-          >
+        <Marker
+          key={atm.id}
+          position={[atm.location.coordinates.lat, atm.location.coordinates.lng]}
+          icon={
+            atm.status === "OFFLINE" 
+              ? iconFaulty
+              : atm.status === "MAINTENANCE"
+              ? iconMaintenance
+              : iconDefault
+          }
+        >
+
             <Popup>
               <div className="p-2">
                 <h3 className="font-semibold text-zenith-neutral-900 mb-1">

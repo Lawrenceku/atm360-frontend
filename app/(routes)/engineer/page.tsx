@@ -1,20 +1,25 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { LogoutIcon, AtmIcon, AlertIcon } from "@/components/icons";
+import { LogoutIcon } from "@/components/icons";
 import { Clock, MapPin, CheckCircle, Circle } from "lucide-react";
 import { motion } from "framer-motion";
 
 import useAtmStore, { selectAtms, selectGetById } from "@/lib/store/atmStore";
 import { useAlertStore, selectAlerts } from "@/lib/store/alertStore";
 import useTicketStore, { selectTickets } from "@/lib/store/ticketStore";
+import { useEngineerStore } from "@/lib/store/engineerStore";
 
 export default function EngineerPage() {
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const setUser = useAuthStore((state) => state.setUser);
+  const authToken = useAuthStore((state) => state.token);
   const router = useRouter();
   const atms = useAtmStore(selectAtms) ?? [];
+  const engineers = useEngineerStore((state) => state.engineers);
 
   useEffect(() => {
     // Ensure stores are refreshed on dashboard load and periodically
@@ -56,11 +61,14 @@ export default function EngineerPage() {
   const allTickets = useTicketStore(selectTickets);
   const assignedTickets = useMemo(
     () => {
-      if (!user?.id) return [];
-      return allTickets.filter((t) => t.engineerId === user.id);
+      return allTickets
+      // if (!user?.id) return [];
+      // return allTickets.filter((t) => t.engineerId === user.id);
     },
     [allTickets, user?.id]
   );
+
+  console.log("Assigned Tickets:", assignedTickets);
   
   // Filter active tasks (not resolved/closed)
   const activeTasks = useMemo(
