@@ -10,86 +10,131 @@ import {
   AlertCircle,
   ArrowLeft,
   Navigation,
-  Shield,
-  Activity,
-  Calendar,
-  CreditCard,
-  Wifi,
   ChevronRight,
+  Wrench,
 } from "lucide-react";
+
 import useAtmStore, { selectGetById } from "@/lib/store/atmStore";
 import { haversineDistance } from "@/lib/utils/geolocation";
+import { cn } from "@/lib/utils";
 
-// Dynamic Map Component
 const AtmLocationMap = dynamic(
   () => import("@/components/locator/ATMLocationMap"),
   {
     ssr: false,
     loading: () => (
       <div className="h-full w-full bg-gray-100 flex items-center justify-center rounded-lg">
-        <div className="text-gray-500">Loading map...</div>
+        <div className="text-gray-500">Loading map…</div>
       </div>
     ),
   }
 );
 
+
 const StatusBadge = ({ status }: { status: ATM["status"] }) => {
-  const statusConfig: Record<string, { color: string; label: string }> = {
+  const config: Record<
+    string,
+    { color: string; label: string }
+  > = {
     ONLINE: { color: "bg-green-100 text-green-700", label: "Available" },
     OFFLINE: { color: "bg-red-100 text-red-700", label: "Out of Service" },
     MAINTENANCE: {
       color: "bg-yellow-100 text-yellow-700",
       label: "Under Maintenance",
     },
-    OUT_OF_CASH: {
-      color: "bg-orange-100 text-orange-700",
-      label: "Out of Cash",
-    },
+    OUT_OF_CASH: { color: "bg-orange-100 text-orange-700", label: "Out of Cash" },
     UNKNOWN: { color: "bg-gray-100 text-gray-700", label: "Unknown" },
   };
 
-  const config = statusConfig[status] ?? statusConfig.UNKNOWN;
-
+  const { color, label } = config[status] ?? config.UNKNOWN;
   return (
-    <span
-      className={`${config.color} px-3 py-1 rounded-full text-sm font-medium`}
-    >
-      {config.label}
+    <span className={`${color} px-3 py-1 rounded-full text-sm font-medium`}>
+      {label}
     </span>
   );
 };
 
-export default function AtmDetailsPage() {
-  const params = useParams();
-  const id = params?.id as string;
-  //@ts-expect-error id may be undefined
-  const atm = useAtmStore(selectGetById(id));
 
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
+const cashLevelLabel = (current: number, capacity: number) => {
+  const pct = (current / capacity) * 100;
+  if (pct > 70) return { label: "High", color: "bg-green-500" };
+  if (pct > 30) return { label: "Medium", color: "bg-yellow-500" };
+  return { label: "Low", color: "bg-red-500" };
+};
+
+const estimateWait = (transactionsToday: number) => {
+  // ~ 1 min per 20 transactions (simple heuristic)
+  const minutes = Math.max(1, Math.round(transactionsToday / 20));
+  return minutes;
+};
+
+
+const RepairCountdown = ({
+  status,
+  expectedBackOnline,
+}: {
+  status: ATM["status"];
+  expectedBackOnline?: string; // ISO string from backend
+}) => {
+  const [seconds, setSeconds] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!expectedBackOnline || !["MAINTENANCE", "OFFLINE"].includes(status))
+      return;
+
+    const target = new Date(expectedBackOnline).getTime();
+    const timer = setInterval(() => {
+      const diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
+      setSeconds(diff);
+      if (diff === 0) clearInterval(timer);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [expectedBackOnline, status]);
+
+  if (!seconds) return null;
+
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  return (
+    <div className="flex items-center gap-2 text-sm text-orange-700">
+      <Wrench className="w-4 h-4" />
+      <span>
+        Back online in{" "}
+        {hrs > 0 && `${hrs}h `}{mins}m {secs}s
+      </span>
+    </div>
+  );
+};
+
+
+export default function AtmDetailsPage() {
+  const { id } = useParams();
+  const atm = useAtmStore(selectGetById?.(id as string) ?? ((_: any) => null));
+
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
 
-  const [mockData] = useState({
-    transactionVolume: Math.floor(Math.random() * 800) + 200,
-    securityRating: 4.5,
+  // ---- Mock customer-centric data (replace with real API later) ----
+  const [customerData] = useState({
+    // 200-800 transactions today – realistic for a busy ATM
+    transactionsToday: Math.floor(Math.random() * 600) + 200,
+    // optional field from backend; fallback to 2h for demo
+    expectedBackOnline: atm?.status === "MAINTENANCE"
+      ? new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+      : undefined,
   });
 
-  // Get user location
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const location = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        };
-        setUserLocation(location);
-
-        // Calculate distance if ATM exists
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLocation(loc);
         if (atm) {
-          const dist = haversineDistance(location, atm.location.coordinates);
-          setDistance(dist);
+          const d = haversineDistance(loc, atm.location.coordinates);
+          setDistance(d);
         }
       },
       () => console.log("Location denied"),
@@ -107,8 +152,7 @@ export default function AtmDetailsPage() {
               ATM Not Found
             </h1>
             <p className="text-gray-600 mb-6">
-              The ATM you&apos;re looking for doesn&apos;t exist or has been
-              removed.
+              The ATM you’re looking for doesn’t exist or has been removed.
             </p>
             <Link
               href="/locator"
@@ -123,25 +167,26 @@ export default function AtmDetailsPage() {
     );
   }
 
+  const waitMins = estimateWait(customerData.transactionsToday);
+  const cashInfo = cashLevelLabel(
+    atm.cashLevel.currentAmount,
+    atm.cashLevel.totalCapacity
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-4">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/locator"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </Link>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  {atm.location.branchName}
-                </h1>
-                <p className="text-sm text-gray-600">{atm.location.address}</p>
-              </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-4">
+            <Link href="/locator" className="text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">
+                {atm.location.branchName}
+              </h1>
+              <p className="text-sm text-gray-600">{atm.location.address}</p>
             </div>
           </div>
         </div>
@@ -149,76 +194,59 @@ export default function AtmDetailsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {/* Main Column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Status */}
+            {/* Status + Quick Info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <StatusBadge status={atm.status} />
                 <span className="text-sm text-gray-600">
                   Updated: {new Date(atm.lastUpdated).toLocaleTimeString()}
                 </span>
               </div>
 
+              {/* Repair countdown (if applicable) */}
+              {["MAINTENANCE", "OFFLINE"].includes(atm.status) && (
+                <div className="mb-4">
+                  <RepairCountdown
+                    status={atm.status}
+                    expectedBackOnline={customerData.expectedBackOnline}
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <CreditCard className="w-5 h-5 text-blue-700" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Model</p>
-                      <p className="font-medium">{atm.model}</p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full ${cn(atm.status === "ONLINE" ? "bg-green-100" : "bg-gray-200")} flex items-center justify-center`}>
+                    <Clock className={`w-5 h-5 ${cn(atm.status === "ONLINE" ? "text-green-700" : "text-gray-400")}`} />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-green-700" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Hours</p>
-                      <p className="font-medium">24/7</p>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600">Cash Availability</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div
+                        className={`w-3 h-3 rounded-full ${cn(atm.status === "ONLINE" ? cashInfo.color : "bg-gray-200")}`}
+                      />
+                      <span className="font-medium">{cashInfo.label}</span>
                     </div>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                      <Wifi className="w-5 h-5 text-purple-700" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Network</p>
-                      <p className="font-medium">{atm.networkStatus}</p>
-                    </div>
+
+                {/* Estimated Wait */}
+                {/* <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-blue-700" />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                      <Activity className="w-5 h-5 text-orange-700" />
-                    </div>
-                    <div className="w-full">
-                      <p className="text-sm text-gray-600">Cash Level</p>
-                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                        <div
-                          className="h-full bg-green-500"
-                          style={{
-                            width: `${
-                              (atm.cashLevel.currentAmount /
-                                atm.cashLevel.totalCapacity) *
-                              100
-                            }%`,
-                          }}
-                        />
-                      </div>
-                      <p className="text-sm mt-1">
-                        ₦{atm.cashLevel.currentAmount.toLocaleString()}
-                      </p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Est. Wait Time</p>
+                    <p className="font-medium">
+                      {waitMins} {waitMins === 1 ? "min" : "mins"}
+                    </p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
-            {/* Map with Route */}
+            {/* Map */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">
@@ -238,53 +266,8 @@ export default function AtmDetailsPage() {
                 />
               </div>
             </div>
-
-            {/* Performance */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Activity className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-medium text-gray-900">
-                      Transaction Volume
-                    </h3>
-                  </div>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {mockData.transactionVolume}
-                  </p>
-                  <p className="text-sm text-gray-600">transactions today</p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Calendar className="w-5 h-5 text-green-600" />
-                    <h3 className="font-medium text-gray-900">
-                      Last Maintenance
-                    </h3>
-                  </div>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {new Date(atm.updatedAt).toLocaleDateString()}
-                  </p>
-                  <p className="text-sm text-gray-600">last serviced</p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Shield className="w-5 h-5 text-purple-600" />
-                    <h3 className="font-medium text-gray-900">
-                      Security Rating
-                    </h3>
-                  </div>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {mockData.securityRating}/5.0
-                  </p>
-                  <p className="text-sm text-gray-600">security score</p>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -306,6 +289,7 @@ export default function AtmDetailsPage() {
                   </span>
                   <ChevronRight className="w-5 h-5" />
                 </button>
+
                 <button className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200">
                   <span className="flex items-center gap-2">
                     <AlertCircle className="w-5 h-5" />

@@ -20,6 +20,9 @@ const userIcon = L.divIcon({
   iconAnchor: [16, 16],
 });
 
+
+
+
 // Custom ATM icon based on status
 const getAtmIcon = (status: string) => {
   const statusConfig: Record<string, { color: string; label: string }> = {
@@ -29,6 +32,7 @@ const getAtmIcon = (status: string) => {
     OUT_OF_CASH: { color: "#fb923c", label: "Out of Cash" },
     UNKNOWN: { color: "#6b7280", label: "Unknown" },
   };
+  
 
   const config = statusConfig[status] || statusConfig.UNKNOWN;
 
@@ -67,6 +71,9 @@ function MapController({ atm, userLocation }: MapControllerProps) {
       routingControlRef.current.remove();
     }
 
+    if (!map || !atm?.location?.coordinates) return;
+
+
     // Create new routing control
     routingControlRef.current = L.Routing.control({
       waypoints: [
@@ -79,17 +86,12 @@ function MapController({ atm, userLocation }: MapControllerProps) {
         missingRouteTolerance: 0,
       },
       addWaypoints: false,
-      //@ts-expect-error type casting
       draggableWaypoints: false,
       routeWhileDragging: false,
       fitSelectedRoutes: true,
       showAlternatives: false,
-      //@ts-expect-error type casting
-      routeWhileDragging: false,
-      createMarker: function () {
-        return null;
-      },
-    }).addTo(map);
+      createMarker: function() { return null; } as any, 
+    } as any).addTo(map);
 
     // Fit bounds to show both points
     const bounds = L.latLngBounds(
@@ -99,10 +101,14 @@ function MapController({ atm, userLocation }: MapControllerProps) {
     map.fitBounds(bounds, { padding: [50, 50] });
 
     return () => {
-      if (routingControlRef.current) {
-        routingControlRef.current.remove();
+      if (routingControlRef.current && map) {
+        try {
+          routingControlRef.current.remove();
+        } catch {}
+        routingControlRef.current = null; 
       }
     };
+
   }, [map, atm, userLocation]);
 
   return null;
@@ -122,6 +128,7 @@ export default function AtmLocationMap({
   return (
     <div className={className}>
       <MapContainer
+        key={atm.id}
         center={[atm.location.coordinates.lat, atm.location.coordinates.lng]}
         zoom={15}
         style={{ height: "100%", width: "100%" }}
@@ -145,28 +152,18 @@ export default function AtmLocationMap({
               <h3 className="font-semibold">{atm.location.branchName}</h3>
               <p className="text-sm text-gray-600">{atm.location.address}</p>
               <div className="mt-2">
-                <span
-                  className={`text-xs px-2 py-1 rounded-full ${
-                    atm.status === "ONLINE"
-                      ? "bg-green-100 text-green-700"
-                      : atm.status === "MAINTENANCE"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : atm.status === "OFFLINE"
-                      ? "bg-red-100 text-red-700"
-                      : atm.status === "OUT_OF_CASH"
-                      ? "bg-orange-100 text-orange-700"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {atm.status === "ONLINE"
-                    ? "Available"
-                    : atm.status === "MAINTENANCE"
-                    ? "Under Maintenance"
-                    : atm.status === "OFFLINE"
-                    ? "Out of Service"
-                    : atm.status === "OUT_OF_CASH"
-                    ? "Out of Cash"
-                    : "Unknown"}
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  atm.status === 'ONLINE' ? 'bg-green-100 text-green-700' :
+                  atm.status === 'MAINTENANCE' ? 'bg-yellow-100 text-yellow-700' :
+                  atm.status === 'OFFLINE' ? 'bg-red-100 text-red-700' :
+                  atm.status === 'OUT_OF_CASH' ? 'bg-orange-100 text-orange-700' :
+                  'bg-gray-100 text-gray-700'
+                }`}>
+                  {atm.status === 'ONLINE' ? 'Available' :
+                   atm.status === 'MAINTENANCE' ? 'Under Maintenance' :
+                   atm.status === 'OFFLINE' ? 'Out of Service' :
+                   atm.status === 'OUT_OF_CASH' ? 'Out of Cash' :
+                   'Unknown'}
                 </span>
               </div>
             </div>
@@ -205,8 +202,7 @@ export default function AtmLocationMap({
           border: none;
         }
         @keyframes ping {
-          75%,
-          100% {
+          75%, 100% {
             transform: scale(2);
             opacity: 0;
           }
