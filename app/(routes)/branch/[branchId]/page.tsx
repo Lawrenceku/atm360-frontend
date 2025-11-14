@@ -6,10 +6,7 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { motion } from "framer-motion";
 import {
   MapPin,
-  Activity,
   Clock,
-  CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import useAtmStore, { selectAtms } from "@/lib/store/atmStore";
 import useTicketStore from "@/lib/store/ticketStore";

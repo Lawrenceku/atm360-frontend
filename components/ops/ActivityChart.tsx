@@ -17,7 +17,23 @@ export default function ActivityChart() {
   const atms = useAtmStore(selectAtms);
   const tickets = useTicketStore(selectTickets);
 
-  // Generate activity data based on real data - transactions per month (simulated from ATM status changes)
+  // Mock fallback data
+  const mockOnlineAtms = 12;
+  const mockResolvedTickets = 34;
+
+  // Calculate real metrics with fallbacks
+  const onlineAtms =
+    atms?.length > 0
+      ? atms.filter((a) => a.status === "ONLINE").length
+      : mockOnlineAtms;
+
+  const resolvedTickets =
+    tickets?.length > 0
+      ? tickets.filter((t) => t.status === "RESOLVED" || t.status === "CLOSED")
+          .length
+      : mockResolvedTickets;
+
+  // Generate months and current month index
   const months = [
     "Jan",
     "Feb",
@@ -32,30 +48,21 @@ export default function ActivityChart() {
     "Nov",
     "Dec",
   ];
-  const currentMonth = new Date().getMonth();
+  const currentMonth = new Date().getMonth(); // 0–11
 
-  // Calculate activity based on online ATMs and resolved tickets
-  const onlineAtms = atms?.filter((a) => a.status === "ONLINE").length;
-  const resolvedTickets = tickets?.filter(
-    (t) => t.status === "RESOLVED" || t.status === "CLOSED"
-  ).length;
-
+  // Generate chart data
   const data = months.map((month, index) => {
-    // Base activity on online ATMs (more ATMs = more activity)
-    // Add some variation for past months to show trend
     const baseActivity = onlineAtms * 50;
-    const variation = index <= currentMonth ? (currentMonth - index) * 10 : 0;
+    const trendVariation = index <= currentMonth ? (currentMonth - index) * 10 : 0;
     const ticketActivity = resolvedTickets * 5;
-    // Use a deterministic variation based on index instead of random
     const deterministicVariation = ((index % 3) - 1) * 15;
 
-    return {
-      month,
-      value: Math.max(
-        0,
-        baseActivity + variation + ticketActivity + deterministicVariation
-      ),
-    };
+    const value = Math.max(
+      0,
+      baseActivity + trendVariation + ticketActivity + deterministicVariation
+    );
+
+    return { month, value: Math.round(value) };
   });
 
   return (
@@ -65,13 +72,22 @@ export default function ActivityChart() {
           Monthly Activity
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1">
-        <div className="w-full h-full">
+      <CardContent className="flex-1 pb-4">
+        <div className="w-full h-full min-h-0">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+            <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis
+                dataKey="month"
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "white",
@@ -79,9 +95,15 @@ export default function ActivityChart() {
                   borderRadius: "6px",
                   fontSize: "12px",
                 }}
-                formatter={(value: number) => [Math.round(value), "Activity"]}
+                formatter={(value: number) => [value, "Transactions"]}
+                cursor={{ fill: "transparent" }}
               />
-              <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="value"
+                fill="#3b82f6"
+                radius={[4, 4, 0, 0]}
+                barSize={20}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

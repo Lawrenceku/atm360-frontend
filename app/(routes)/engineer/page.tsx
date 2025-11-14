@@ -159,7 +159,7 @@ export default function EngineerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zenith-neutral-50 to-zenith-accent-50">
+    <div className="min-h-screen bg-gradient-to-br from-zenith-neutral-50 to-zenith-red-50">
       <div className="bg-white border-b border-zenith-neutral-200">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div>
@@ -207,8 +207,8 @@ export default function EngineerPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-zenith-accent-100 rounded-lg">
-                  <Clock className="w-5 h-5 text-zenith-accent-600" />
+                <div className="p-2 bg-zenith-red-100 rounded-lg">
+                  <Clock className="w-5 h-5 text-zenith-red-600" />
                 </div>
                 <div>
                   <p className="text-xs text-zenith-neutral-500">Engineer ID</p>
@@ -220,8 +220,8 @@ export default function EngineerPage() {
             </div>
             <div className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-zenith-accent-100 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-zenith-accent-600" />
+                <div className="p-2 bg-zenith-red-100 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-zenith-red-600" />
                 </div>
                 <div>
                   <p className="text-xs text-zenith-neutral-500">
@@ -238,8 +238,8 @@ export default function EngineerPage() {
             </div>
             <div className="bg-white rounded-lg shadow-lg border border-zenith-neutral-200 p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-zenith-accent-100 rounded-lg">
-                  <Circle className="w-5 h-5 text-zenith-accent-600" />
+                <div className="p-2 bg-zenith-red-100 rounded-lg">
+                  <Circle className="w-5 h-5 text-zenith-red-600" />
                 </div>
                 <div>
                   <p className="text-xs text-zenith-neutral-500">
@@ -303,7 +303,7 @@ export default function EngineerPage() {
                           >
                             {ticket.severity}
                           </span>
-                          <span className="text-xs px-2 py-1 rounded-full bg-zenith-accent-100 text-zenith-accent-700">
+                          <span className="text-xs px-2 py-1 rounded-full bg-zenith-red-100 text-zenith-red-700">
                             {step}
                           </span>
                         </div>
@@ -322,7 +322,7 @@ export default function EngineerPage() {
                           e.stopPropagation();
                           router.push(`/engineer/task/${ticket.id}`);
                         }}
-                        className="px-4 py-2 bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white rounded-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all text-sm font-medium"
+                        className="px-4 py-2 bg-gradient-to-r from-zenith-red-500 to-zenith-red-600 text-white rounded-lg hover:from-zenith-red-600 hover:to-zenith-red-700 transition-all text-sm font-medium"
                       >
                         View Task
                       </button>

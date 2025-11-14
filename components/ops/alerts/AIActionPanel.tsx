@@ -12,25 +12,25 @@ import formatText from "@/lib/utils/formatText";
 const aiSteps = [
   {
     step: "Zeni is collecting information about the alert...",
-    stepCount: 4000,
+    stepCount: 1000,
   },
-  { step: "Analyzing ATM location and fault type...", stepCount: 5000 },
-  { step: "Searching for nearby available engineers...", stepCount: 3000 },
+  { step: "Analyzing ATM location and fault type...", stepCount: 500 },
+  { step: "Searching for nearby available engineers...", stepCount: 500 },
   {
     step: "Selecting engineer based on proximity and performance...",
-    stepCount: 5000,
+    stepCount: 1000,
   },
-  { step: "Sending WhatsApp message to engineer...", stepCount: 2000 },
-  { step: "Waiting for engineer response...", stepCount: 10000 },
+  { step: "Sending WhatsApp message to engineer...", stepCount: 1000 },
+  { step: "Waiting for engineer response...", stepCount: 5000 },
   { step: "Engineer has accepted the task.", stepCount: 1000 },
   {
     step: "Dispatch complete — Task ticket created. Alert Resolved",
     stepCount: 1000,
   },
-  { step: "Waiting for engineer to upload proof of fix...", stepCount: 8000 },
+  { step: "Waiting for engineer to upload proof of fix...", stepCount: 1000 },
   {
     step: "Proof of fix received. Zeni is analyzing realtime data from the ATM",
-    stepCount: 8000,
+    stepCount: 2000,
   },
   { step: "ATM Operational. Ticket Closed.", stepCount: 2000 },
 ];

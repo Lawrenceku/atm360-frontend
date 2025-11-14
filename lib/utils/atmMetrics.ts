@@ -335,37 +335,48 @@ export function calculateRegionalPerformance(atms: ATM[]): Array<{
   });
 }
 
-// Total Cost of ATM Operations (mock - would need actual cost data)
 export function calculateTotalCost(
-  atms: ATM[],
-  tickets: Ticket[]
+  atms: ATM[] = [],
+  tickets: Ticket[] = []
 ): Array<{ month: string; cost: number }> {
-  // Mock data - in reality, this would come from a cost tracking system
   const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
 
-  // Estimate cost based on number of ATMs and tickets
-  const baseCostPerAtm = 50000; // Naira per month
-  const costPerTicket = 15000; // Average cost per ticket
+  // === CONFIGURABLE CONSTANTS ===
+  const BASE_COST_PER_ATM = 50_000;        // Naira per ATM per month
+  const COST_PER_TICKET = 15_000;          // Average cost per ticket
+  const FALLBACK_MONTHLY_COST = 1_000_000; // Fallback if no ATMs/tickets
+
+  // Use fallback if no meaningful data
+  const hasAtms = Array.isArray(atms) && atms.length > 0;
+  const hasTickets = Array.isArray(tickets) && tickets.length > 0;
 
   return months.map((month, index) => {
-    const atmCost = atms?.length * baseCostPerAtm;
-    const maintenanceCost = tickets?.length * costPerTicket * (index + 1) * 0.1; // Decreasing trend
+    let totalCost = 0;
+
+    if (hasAtms || hasTickets) {
+      // Normal calculation
+      const atmCount = hasAtms ? atms.length : 0;
+      const ticketCount = hasTickets ? tickets.length : 0;
+
+      const atmCost = atmCount * BASE_COST_PER_ATM;
+      
+      // Simulate seasonal maintenance: peaks mid-year, lower at start/end
+      const seasonalFactor = 1 + 0.3 * Math.sin((index * Math.PI) / 6);
+      const maintenanceCost = ticketCount * COST_PER_TICKET * seasonalFactor;
+
+      totalCost = Math.round(atmCost + maintenanceCost);
+    } else {
+      // === FALLBACK: Use minimum operational cost ===
+      totalCost = FALLBACK_MONTHLY_COST;
+    }
+
+    // Ensure minimum cost floor
     return {
       month,
-      cost: Math.round(atmCost + maintenanceCost),
+      cost: Math.max(totalCost, FALLBACK_MONTHLY_COST * 0.5), // Never below 50% of fallback
     };
   });
 }

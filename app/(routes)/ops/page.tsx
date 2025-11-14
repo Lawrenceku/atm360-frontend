@@ -62,70 +62,65 @@ export default function OpsPage() {
 
   return (
     <>
-      <Filters />
+  <Filters />
 
-      <div className="flex-1 overflow-auto p-6 space-y-6">
-        {/* Top KPI Row */}
-        <div
-          data-guide="kpi-cards"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          <KpiCard title="Active ATMs" value={`${onlineAtms}/${totalAtms}`} />
-          <KpiCard title="Network Uptime" value={`${uptime}%`} />
-          <KpiCard title="Mean Time to Repair" value={formatTime(mttr)} />
-          <KpiCard title="Active Tickets" value={activeTickets?.toString()} />
-        </div>
+  <div className="flex-1 overflow-auto p-4 md:p-6 space-y-6">
+    {/* === TOP KPI ROW === */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+      <KpiCard title="Active ATMs" value={`${onlineAtms}/${totalAtms}`} />
+      <KpiCard title="Network Uptime" value={`${uptime}%`} />
+      <KpiCard title="Active Tickets" value={activeTickets || 0} />
+      <KpiCard title="MTTR" value={formatTime(mttr)} />
+      <KpiCard title="SLA Compliance" value="98.2%" />
+      <KpiCard title="Fraud Alerts" value="3" />
+    </div>
 
-        {/* Main KPI Section - Row 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div data-guide="network-uptime">
-            <AtmNetworkUptime />
-          </div>
-          <SLACompliance />
-          <MeanTimeToRepair />
-        </div>
-
-        {/* Main KPI Section - Row 2 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <IncidentBreakdown />
-          <CashAvailability />
-        </div>
-
-        {/* Main KPI Section - Row 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <AtmDowntimeByRegion />
-          <RegionalPerformance />
-        </div>
-
-        {/* Main KPI Section - Row 4 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FraudDetectionRate />
-          <EngineerUtilization />
-        </div>
-
-        {/* Main KPI Section - Row 5 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CashReplenishmentTime />
-          <TotalCostOfOperations />
-        </div>
-
-        {/* Main KPI Section - Row 6 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TopAtmsByVolume />
-          <RecurringFaults />
-        </div>
-
-        {/* Activity Chart and Other Components */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div data-guide="activity-chart">
-            <ActivityChart />
-          </div>
-          <div className="space-y-4">
-            <TopicList />
-            <Leaderboard />
-          </div>
-        </div>
+    {/* === HERO SECTION: Cash Availability + Mini Stats === */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Left Column: Key Performance Charts */}
+      <div className="space-y-6">
+        <AtmNetworkUptime />
+        <IncidentBreakdown />
+        
       </div>
-    </>
+
+      {/* Right Column: CASH AVAILABILITY HERO + Mini Stats (no extra gap) */}
+      <div className="h-fit space-y-4">
+        <CashAvailability />
+        <AtmDowntimeByRegion />
+
+      </div>
+    </div>
+
+    {/* === ROW: Regional & Cost === */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <RegionalPerformance />
+      <TotalCostOfOperations />
+    </div>
+
+    {/* === ROW: Fraud + Replenishment === */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <FraudDetectionRate />
+      <CashReplenishmentTime />
+    </div>
+
+    {/* === ROW: Volume + Faults === */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <TopAtmsByVolume />
+      <RecurringFaults />
+    </div>
+
+    {/* === BOTTOM: Activity + Leaderboard === */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg">
+        <ActivityChart />
+      </div>
+      <div className="space-y-6">
+        <TopicList />
+        <Leaderboard />
+      </div>
+    </div>
+  </div>
+</>
   );
 }

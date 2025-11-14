@@ -21,10 +21,14 @@ import {
 } from "recharts";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
-import Sidebar from "@/components/ops/Sidebar";
-import { TopNav } from "@/components/ops/TopNav";
 import { useAtmStore, selectAtms } from "@/lib/store/atmStore";
-
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 const PRIMARY = "#3F51B5";
 const COLORS = ["#3F51B5", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -217,7 +221,23 @@ export default function ReportsPage() {
         data-guide="reports-header"
         className="flex justify-between items-center"
       >
-        <h1 className="text-2xl font-bold text-gray-900">Operations Report</h1>
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold text-gray-900">Operations Report</h1>
+          <Select>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select a branch" />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectItem value="all">All</SelectItem>
+        <SelectItem value="victoria-island">Victoria Island</SelectItem>
+        <SelectItem value="lekki-phase-1">Lekki Phase 1</SelectItem>
+        <SelectItem value="ikeja-gra">Ikeja GRA</SelectItem>
+        <SelectItem value="ikeja-gra"> Surulere</SelectItem>
+      </SelectContent>
+    </Select>
+        </div>
+
         <Button
           data-guide="download-pdf"
           onClick={downloadPDF}

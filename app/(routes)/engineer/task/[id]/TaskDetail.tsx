@@ -294,8 +294,9 @@ useEffect(() => {
         user: { role: "engineer", id: user?.id },
       });
 
-      vibrate();
-      toast.success("Verification successful! You can now proceed with repairs.");
+    //   vibrate();
+    //   toast.success("Verification successful! You can now proceed with repairs.");
+    // }
     }
   }, [arrived, ticket?.status, ticket?.id, verified, user?.id, vibrate, addLog, toast]);
 
@@ -479,7 +480,7 @@ useEffect(() => {
           <div className="mt-6">
             <button
               onClick={() => router.back()}
-              className="px-6 py-2 bg-zenith-accent-600 text-white rounded-lg hover:bg-zenith-accent-500 transition"
+              className="px-6 py-2 bg-zenith-red-600 text-white rounded-lg hover:bg-zenith-red-500 transition"
             >
               Go Back
             </button>
@@ -490,7 +491,7 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zenith-neutral-50 to-zenith-accent-50">
+    <div className="min-h-screen bg-gradient-to-br from-zenith-neutral-50 to-zenith-red-50">
       <Header title={`Task #${ticket.id}`} subtitle="Engineer Workflow" />
       <MultiStepProgress steps={steps} activeStep={activeStep} />
       
@@ -519,8 +520,8 @@ useEffect(() => {
                 )}
                 {!arrived && isSimulatingArrival && (
                   <div className="mt-4 space-y-3">
-                    <div className="bg-white/70 backdrop-blur-sm border border-zenith-accent-100 rounded-lg p-4 shadow-inner">
-                      <p className="text-sm font-semibold text-zenith-accent-700">
+                    <div className="bg-white/70 backdrop-blur-sm border border-zenith-red-100 rounded-lg p-4 shadow-inner">
+                      <p className="text-sm font-semibold text-zenith-red-700">
                         Navigating to ATM...
                       </p>
                       <p className="text-xs text-zenith-neutral-500 mt-1">
@@ -528,7 +529,7 @@ useEffect(() => {
                       </p>
                       <div className="h-2 w-full bg-zenith-neutral-200 rounded-full overflow-hidden mt-3">
                         <div
-                          className="h-full bg-zenith-accent-500 transition-all duration-100"
+                          className="h-full bg-zenith-red-500 transition-all duration-100"
                           style={{ width: `${simulationProgress}%` }}
                         />
                       </div>
@@ -538,7 +539,7 @@ useEffect(() => {
                     </div>
                     <button
                       onClick={handleSkipSimulation}
-                      className="text-xs text-zenith-neutral-500 hover:text-zenith-accent-600 underline transition"
+                      className="text-xs text-zenith-neutral-500 hover:text-zenith-red-600 underline transition"
                     >
                       Skip simulation (dev)
                     </button>
@@ -560,11 +561,11 @@ useEffect(() => {
                     code={verificationCode}
                     onVerified={() => {}}
                   />
-                  <div className="mt-4 p-4 bg-zenith-accent-50 rounded-lg border border-zenith-accent-200">
-                    <p className="text-sm text-zenith-accent-700 font-medium">
+                  <div className="mt-4 p-4 bg-zenith-red-50 rounded-lg border border-zenith-red-200">
+                    <p className="text-sm text-zenith-red-700 font-medium">
                       Waiting for branch staff to verify your code...
                     </p>
-                    <p className="text-xs text-zenith-accent-600 mt-1">
+                    <p className="text-xs text-zenith-red-600 mt-1">
                       Share code <strong>{verificationCode}</strong> with branch staff. They will verify it matches their system.
                     </p>
                   </div>
@@ -580,14 +581,14 @@ useEffect(() => {
                 className="w-full space-y-4"
               >
                 {repairStarted && repairStartTime && (
-                  <div className="bg-white rounded-lg shadow-lg border border-zenith-accent-200 p-4">
+                  <div className="bg-white rounded-lg shadow-lg border border-zenith-red-200 p-4">
                     <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-zenith-accent-600" />
+                      <Clock className="w-5 h-5 text-zenith-red-600" />
                       <div>
                         <p className="text-sm text-zenith-neutral-500">
                           Repair Time
                         </p>
-                        <p className="text-lg font-semibold text-zenith-accent-700">
+                        <p className="text-lg font-semibold text-zenith-red-700">
                           {Math.floor(
                             (new Date().getTime() - repairStartTime.getTime()) / 60000
                           )}{" "}
@@ -645,7 +646,7 @@ useEffect(() => {
                   <button
                     onClick={handleMarkComplete}
                     disabled={actionLoading}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white rounded-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all font-medium shadow-lg disabled:opacity-60"
+                    className="w-full px-6 py-3 bg-gradient-to-r from-zenith-red-500 to-zenith-red-600 text-white rounded-lg hover:from-zenith-red-600 hover:to-zenith-red-700 transition-all font-medium shadow-lg disabled:opacity-60"
                   >
                     {actionLoading ? "Completing..." : "Mark Task Complete"}
                   </button>
@@ -670,7 +671,7 @@ useEffect(() => {
                   Great work! The task has been successfully completed.
                 </p>
                 {repairStartTime && ticket.resolution && (
-                  <div className="mb-6 p-4 bg-zenith-accent-50 rounded-lg">
+                  <div className="mb-6 p-4 bg-zenith-red-50 rounded-lg">
                     <p className="text-sm text-zenith-neutral-600">
                       Total repair time: {ticket.resolution.timeSpentMinutes}{" "}
                       minutes
@@ -679,7 +680,7 @@ useEffect(() => {
                 )}
                 <button
                   onClick={() => router.push("/engineer")}
-                  className="px-6 py-3 bg-gradient-to-r from-zenith-accent-500 to-zenith-accent-600 text-white rounded-lg hover:from-zenith-accent-600 hover:to-zenith-accent-700 transition-all font-medium"
+                  className="px-6 py-3 bg-gradient-to-r from-zenith-red-500 to-zenith-red-600 text-white rounded-lg hover:from-zenith-red-600 hover:to-zenith-red-700 transition-all font-medium"
                 >
                   Return to Dashboard
                 </button>

@@ -6,17 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowUp, ArrowDown } from "lucide-react";
 
 const techs = [
-  { name: "Jesse Thomas", points: 637, change: "up" },
-  { name: "Thisal M.", points: 637, change: "down" },
-  { name: "Helen Chuang", points: 637, change: "up" },
-  { name: "Luka S.", points: 637, change: "down" },
+  { name: "Adebayo Adekunle", points: 637, change: "up" },
+  { name: "Tunde Bakare", points: 637, change: "down" },
+  { name: "Emeka Okafor", points: 637, change: "up" },
+  { name: "Musa Danjuma", points: 637, change: "down" },
 ];
 
 const branches = [
-  { name: "Houston Facility", percent: 97, change: "up" },
-  { name: "Test Group", percent: 95, change: "down" },
-  { name: "Sales Leadership", percent: 87, change: "up" },
-  { name: "Northeast Region", percent: 82, change: "down" },
+  { name: "Zenith-Surulere", percent: 97, change: "up" },
+  { name: "Zenith-Ikoyi", percent: 95, change: "down" },
+  { name: "Zenith-VI", percent: 87, change: "up" },
+  { name: "Zenith-Lekki", percent: 82, change: "down" },
 ];
 
 export default function Leaderboard() {

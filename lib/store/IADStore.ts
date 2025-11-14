@@ -67,8 +67,8 @@ export const useIADStore = create<IADState>()(
         set({
           current: {
             id: "IAD-001",
-            name: "Global ATM Deployers Ltd",
-            licenseNumber: "CBN-IAD-2023-889",
+            name: "iad",
+            licenseNumber: "123456",
             ninssRegistered: true,
             switchPartners: ["Interswitch", "eTranzact"],
             address: "Plot 5, Industrial Avenue, Lagos",
