@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
-import { User, Server, Box } from "lucide-react"; // Ops Admin, Bank Core, Gateway (Box as gateway)
+import { User, Server, Box } from "lucide-react"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ; // Ops Admin, Bank Core, Gateway (Box as gateway)
 import { motion } from "framer-motion";
 
 interface Node {
@@ -113,7 +113,6 @@ export default function IADDataFlowViz() {
 
       // Render customized nodes with icons and label
       nodeGroup.each(function (d) {
-        //@ts-expect-error type
         const group = d3.select(this);
 
         if (d.id === "iad") {
@@ -189,7 +188,10 @@ export default function IADDataFlowViz() {
           .node();
 
         // React render the icon with framer motion if pulse
-        import("react-dom").then((ReactDOM) => {
+        // Use React 18 createRoot API from react-dom/client
+        const divNode = div as Element | null;
+        if (!divNode) return;
+        import("react-dom/client").then((ReactDOMClient) => {
           import("react").then((React) => {
             const iconJsx = pulse ? (
               <motion.div
@@ -228,7 +230,8 @@ export default function IADDataFlowViz() {
                 size={iconSize}
               />
             );
-            ReactDOM.render(iconJsx, div);
+            const root = ReactDOMClient.createRoot(divNode);
+            root.render(iconJsx);
           });
         });
       };

@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { haversineDistance } from "@/lib/utils/geolocation";
 import { MapContainer, TileLayer, Marker, Polyline } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
-// Lazy load leaflet CSS only
-if (typeof window !== "undefined") {
-  import("leaflet/dist/leaflet.css");
-}
+// // Lazy load leaflet CSS only
+// if (typeof window !== "undefined") {
+//   import("leaflet/dist/leaflet.css");
+// }
 
 let L: any;
 if (typeof window !== "undefined") {
