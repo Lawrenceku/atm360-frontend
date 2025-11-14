@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { CustomToaster } from "../components/CustomToaster";
 import Script from "next/script";
+import SuppressErrors from "./SuppressErrors";
 const monaSans = localFont({
   src: [
     {
@@ -37,6 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={monaSans.variable}>
       <body className="font-sans antialiased">
+        <SuppressErrors />
         {children}
         <CustomToaster />
       </body>
